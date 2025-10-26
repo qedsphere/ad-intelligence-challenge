@@ -1,0 +1,56 @@
+{
+  "image_id": "i0006",
+  "metadata": {
+    "image_id": "i0006",
+    "original_path": "ads/images/i0006.png",
+    "original_size": [
+      430,
+      625
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 286821,
+    "format": "PNG",
+    "processing_time_ms": 3699.686050415039
+  },
+  "files": {
+    "standardized_png": "i0006_standardized.png",
+    "detections_png": "i0006_detections.png",
+    "attention_overlay_png": "i0006_attention_overlay.png",
+    "attention_heatmap_npz": "i0006_attention_heatmap.npz",
+    "ocr_txt": "i0006_ocr.txt",
+    "visual_semantics_json": "i0006_visual_semantics.json",
+    "attention_map_json": "i0006_attention_map.json",
+    "llm_description_json": "i0006_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 1,
+    "scene_top": [
+      {
+        "label": "breakfast scene",
+        "score": 0.15815868973731995
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "bagel",
+          "score": 0.11591293662786484
+        },
+        {
+          "label": "pretzel",
+          "score": 0.05984406918287277
+        },
+        {
+          "label": "burger",
+          "score": 0.05438581481575966
+        }
+      ]
+    },
+    "ocr_snippet": "Einstein Bros. Bagels Here for a fun time not a long time! Try the NEW Pretzel Bagel Double Dipper with Beer Cheese Shmear & mustard ROA Pretzel Bagel Double Di",
+    "attention_entropy": 8.770423771071744
+  }
+}

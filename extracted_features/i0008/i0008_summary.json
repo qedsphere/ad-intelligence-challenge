@@ -1,0 +1,56 @@
+{
+  "image_id": "i0008",
+  "metadata": {
+    "image_id": "i0008",
+    "original_path": "ads/images/i0008.png",
+    "original_size": [
+      430,
+      604
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 245637,
+    "format": "PNG",
+    "processing_time_ms": 3224.7369289398193
+  },
+  "files": {
+    "standardized_png": "i0008_standardized.png",
+    "detections_png": "i0008_detections.png",
+    "attention_overlay_png": "i0008_attention_overlay.png",
+    "attention_heatmap_npz": "i0008_attention_heatmap.npz",
+    "ocr_txt": "i0008_ocr.txt",
+    "visual_semantics_json": "i0008_visual_semantics.json",
+    "attention_map_json": "i0008_attention_map.json",
+    "llm_description_json": "i0008_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 1,
+    "scene_top": [
+      {
+        "label": "text-heavy ad",
+        "score": 0.21432501077651978
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "price tag",
+          "score": 0.054931461811065674
+        },
+        {
+          "label": "discount badge",
+          "score": 0.054639436304569244
+        },
+        {
+          "label": "brand logo",
+          "score": 0.05085734650492668
+        }
+      ]
+    },
+    "ocr_snippet": "Xero Shoes x $ e Save 10% sitewide on foot-shaped comfort\u2014zero-drop, flexible footwear for natural movement. XERGSHOES 10% Off Sitewide Learn more",
+    "attention_entropy": 8.456539186058084
+  }
+}

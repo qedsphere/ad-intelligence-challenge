@@ -1,0 +1,56 @@
+{
+  "image_id": "i0005",
+  "metadata": {
+    "image_id": "i0005",
+    "original_path": "ads/images/i0005.png",
+    "original_size": [
+      430,
+      625
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 403281,
+    "format": "PNG",
+    "processing_time_ms": 4393.893003463745
+  },
+  "files": {
+    "standardized_png": "i0005_standardized.png",
+    "detections_png": "i0005_detections.png",
+    "attention_overlay_png": "i0005_attention_overlay.png",
+    "attention_heatmap_npz": "i0005_attention_heatmap.npz",
+    "ocr_txt": "i0005_ocr.txt",
+    "visual_semantics_json": "i0005_visual_semantics.json",
+    "attention_map_json": "i0005_attention_map.json",
+    "llm_description_json": "i0005_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 2,
+    "scene_top": [
+      {
+        "label": "text-heavy ad",
+        "score": 0.17412135004997253
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "bagel",
+          "score": 0.07751569151878357
+        },
+        {
+          "label": "burger",
+          "score": 0.07496187835931778
+        },
+        {
+          "label": "fries",
+          "score": 0.049491751939058304
+        }
+      ]
+    },
+    "ocr_snippet": ". : e Einstein Bros. Bagels x : Try the NEW Oktoberfest Egg Sandwich \u2014 Pretzel Bagel \u00a7Q with Bacon, Ham, Swiss & Beer Cheese Shmear @ It won't last long! Order ",
+    "attention_entropy": 8.822556393375836
+  }
+}

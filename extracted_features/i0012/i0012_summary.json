@@ -1,0 +1,56 @@
+{
+  "image_id": "i0012",
+  "metadata": {
+    "image_id": "i0012",
+    "original_path": "ads/images/i0012.png",
+    "original_size": [
+      430,
+      744
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 327420,
+    "format": "PNG",
+    "processing_time_ms": 4751.904010772705
+  },
+  "files": {
+    "standardized_png": "i0012_standardized.png",
+    "detections_png": "i0012_detections.png",
+    "attention_overlay_png": "i0012_attention_overlay.png",
+    "attention_heatmap_npz": "i0012_attention_heatmap.npz",
+    "ocr_txt": "i0012_ocr.txt",
+    "visual_semantics_json": "i0012_visual_semantics.json",
+    "attention_map_json": "i0012_attention_map.json",
+    "llm_description_json": "i0012_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 0,
+    "scene_top": [
+      {
+        "label": "text-heavy ad",
+        "score": 0.2650848925113678
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "coupon",
+          "score": 0.061869360506534576
+        },
+        {
+          "label": "discount badge",
+          "score": 0.05475025996565819
+        },
+        {
+          "label": "brand logo",
+          "score": 0.046380847692489624
+        }
+      ]
+    },
+    "ocr_snippet": "$2,000 to put toward college could be yours. Apply for Niche's $2k no essay scholarship in minutes for a chance SEPTEMBER * $2K Scholarship No Essay = DEADLINE:",
+    "attention_entropy": 9.066811137548848
+  }
+}

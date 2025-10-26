@@ -1,487 +1,394 @@
 """
-Image Feature Extraction Pipeline
+Image Batch Extraction Runner (Parallel, Deadline-Aware)
+- Stage A: Standardize images (CPU-heavy) in a pool
+- Stage B: Extract features (YOLO+CLIP+OCR, TPPGaze) in a pool
+- As soon as an image is standardized, it flows to extraction (pipeline)
+- Saves interpretable artifacts per image + project index CSV
 
-This module handles:
-1. Loading images from ads/images directory
-2. Standardizing dimensions and quality
-3. Managing processed image database
-4. Running all feature extraction methods on standardized images
+CLI:
+    python -m image.extraction \
+        --images_dir ads/images \
+        --out_dir extracted_features \
+        --size 1024 1024 \
+        --std_workers 6 \
+        --ext_workers auto \
+        --deadline_seconds 300 \
+        --per_image_timeout 120 \
+        [--force]
 """
 
+from __future__ import annotations
+
 import os
+import csv
 import json
-import logging
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, asdict
 import time
+import argparse
+import logging
+from dataclasses import dataclass, asdict
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+from concurrent.futures import ThreadPoolExecutor, as_completed, Future
 
 import numpy as np
-from PIL import Image
-import cv2
+from PIL import Image, ImageDraw, ImageFont
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# ====== project extractors (must exist in image/) ======
+from image import visual_semantics as VS
+from image import attention_map as AM
+try:
+    from image import llm_description as LLM  # optional
+except Exception:
+    LLM = None
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
+log = logging.getLogger("extraction")
 
 
+# ----------------- helpers & data -----------------
 @dataclass
-class ImageMetadata:
-    """Metadata for each processed image"""
+class Meta:
     image_id: str
     original_path: str
-    original_size: Tuple[int, int]  # (width, height)
-    standardized_size: Tuple[int, int]
+    original_size: Tuple[int, int]  # (W, H)
+    standardized_size: Tuple[int, int]  # (H, W)
     file_size_bytes: int
     format: str
-    processing_time_ms: float
+    processing_time_ms: float = 0.0
 
 
-@dataclass
-class ExtractedFeatures:
-    """Container for all extracted features from an image"""
-    image_id: str
-    metadata: ImageMetadata
-    
-    # Feature extraction results (to be filled by specialized modules)
-    attention_map: Optional[Dict[str, Any]] = None
-    characterization: Optional[Dict[str, Any]] = None
-    emotional_tone: Optional[Dict[str, Any]] = None
-    text_branding: Optional[Dict[str, Any]] = None
-    visual_semantics: Optional[Dict[str, Any]] = None
-    llm_description: Optional[Dict[str, Any]] = None
-    
-    processing_time_total_ms: float = 0.0
+def _json_default(o):
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    if isinstance(o, (np.floating,)):
+        return float(o)
+    if isinstance(o, (np.integer,)):
+        return int(o)
+    return str(o)
 
 
-class ImageDatabase:
-    """Manages standardized images and their metadata"""
-    
-    def __init__(self, cache_dir: str = "processed_images"):
-        self.cache_dir = Path(cache_dir)
-        self.cache_dir.mkdir(exist_ok=True)
-        self.metadata_file = self.cache_dir / "metadata.json"
-        self.metadata: Dict[str, ImageMetadata] = {}
-        self._load_metadata()
-    
-    def _load_metadata(self):
-        """Load existing metadata if available"""
-        if self.metadata_file.exists():
-            with open(self.metadata_file, 'r') as f:
-                data = json.load(f)
-                self.metadata = {
-                    k: ImageMetadata(**v) for k, v in data.items()
-                }
-            logger.info(f"Loaded metadata for {len(self.metadata)} images")
-    
-    def save_metadata(self):
-        """Save metadata to disk"""
-        with open(self.metadata_file, 'w') as f:
-            json.dump(
-                {k: asdict(v) for k, v in self.metadata.items()},
-                f,
-                indent=2
-            )
-    
-    def get_image_path(self, image_id: str) -> Path:
-        """Get path to standardized image"""
-        return self.cache_dir / f"{image_id}.npy"
-    
-    def save_image(self, image_id: str, image_array: np.ndarray, metadata: ImageMetadata):
-        """Save standardized image and metadata"""
-        np.save(self.get_image_path(image_id), image_array)
-        self.metadata[image_id] = metadata
-    
-    def load_image(self, image_id: str) -> Optional[np.ndarray]:
-        """Load standardized image"""
-        image_path = self.get_image_path(image_id)
-        if image_path.exists():
-            return np.load(image_path)
-        return None
-    
-    def has_image(self, image_id: str) -> bool:
-        """Check if image is already processed"""
-        return self.get_image_path(image_id).exists()
+def load_and_standardize(path: Path, target_size=(1024, 1024), keep_aspect=True) -> Tuple[Image.Image, np.ndarray]:
+    img = Image.open(path).convert("RGB")
+    if keep_aspect:
+        tw, th = target_size
+        w, h = img.size
+        scale = min(tw / w, th / h)
+        nw, nh = int(w * scale), int(h * scale)
+        img_resized = img.resize((nw, nh), Image.LANCZOS)
+        canvas = Image.new("RGB", (tw, th), (0, 0, 0))
+        x_off = (tw - nw) // 2
+        y_off = (th - nh) // 2
+        canvas.paste(img_resized, (x_off, y_off))
+        std_pil = canvas
+    else:
+        std_pil = img.resize(target_size, Image.LANCZOS)
+    arr = np.asarray(std_pil).astype(np.float32) / 255.0  # HxWx3 [0,1]
+    return std_pil, arr
 
 
-class ImageStandardizer:
-    """Standardizes image dimensions and quality"""
-    
+def draw_detections(pil_img: Image.Image, dets: List[Dict[str, Any]]) -> Image.Image:
+    out = pil_img.copy()
+    draw = ImageDraw.Draw(out)
+    try:
+        font = ImageFont.load_default()
+    except Exception:
+        font = None
+    for d in dets or []:
+        x1, y1, x2, y2 = [int(x) for x in d.get("bbox", [0, 0, 0, 0])]
+        label = f"{d.get('class_name','')} {d.get('confidence',0):.2f}"
+        draw.rectangle((x1, y1, x2, y2), outline=(0, 255, 0), width=3)
+        if font:
+            draw.text((x1 + 4, y1 + 4), label, fill=(0, 255, 0), font=font)
+    return out
+
+
+def overlay_heatmap(pil_img: Image.Image, heatmap01: np.ndarray, alpha: float = 0.45) -> Image.Image:
+    import matplotlib.cm as cm
+    base = np.array(pil_img).astype(np.float32) / 255.0
+    hm_rgb = cm.get_cmap("jet")(np.clip(heatmap01, 0, 1))[:, :, :3]
+    mix = (1.0 - alpha) * base + alpha * hm_rgb
+    return Image.fromarray((np.clip(mix, 0, 1) * 255).astype(np.uint8))
+
+
+def _torch_accel():
+    t = getattr(VS, "_torch", None)
+    if t is None:
+        return {"cuda": False, "mps": False}
+    cuda = bool(t.cuda.is_available())
+    mps = False
+    try:
+        mps = bool(getattr(t.backends, "mps", None) and t.backends.mps.is_available())
+    except Exception:
+        pass
+    return {"cuda": cuda, "mps": mps}
+
+
+# ----------------- core runner -----------------
+class Runner:
     def __init__(
         self,
-        target_size: Tuple[int, int] = (1024, 1024),
-        maintain_aspect_ratio: bool = True,
-        interpolation: int = cv2.INTER_LANCZOS4
-    ):
-        self.target_size = target_size
-        self.maintain_aspect_ratio = maintain_aspect_ratio
-        self.interpolation = interpolation
-    
-    def standardize(self, image_path: str) -> Tuple[np.ndarray, ImageMetadata]:
-        """
-        Standardize an image to consistent dimensions and quality
-        
-        Returns:
-            Tuple of (standardized_image_array, metadata)
-        """
-        start_time = time.time()
-        
-        # Extract image ID from filename
-        image_id = Path(image_path).stem
-        
-        # Load image
-        img = Image.open(image_path)
-        original_size = img.size  # (width, height)
-        original_format = img.format
-        
-        # Convert to RGB if necessary
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        
-        # Convert to numpy array
-        img_array = np.array(img)
-        
-        # Resize image
-        if self.maintain_aspect_ratio:
-            img_array = self._resize_with_aspect_ratio(img_array)
-        else:
-            img_array = cv2.resize(
-                img_array,
-                self.target_size,
-                interpolation=self.interpolation
-            )
-        
-        # Normalize pixel values to [0, 1]
-        img_array = img_array.astype(np.float32) / 255.0
-        
-        processing_time = (time.time() - start_time) * 1000  # milliseconds
-        
-        # Create metadata
-        metadata = ImageMetadata(
-            image_id=image_id,
-            original_path=image_path,
-            original_size=original_size,
-            standardized_size=img_array.shape[:2],  # (height, width)
-            file_size_bytes=os.path.getsize(image_path),
-            format=original_format or 'unknown',
-            processing_time_ms=processing_time
-        )
-        
-        return img_array, metadata
-    
-    def _resize_with_aspect_ratio(self, img_array: np.ndarray) -> np.ndarray:
-        """Resize image while maintaining aspect ratio with padding"""
-        h, w = img_array.shape[:2]
-        target_w, target_h = self.target_size
-        
-        # Calculate scaling factor
-        scale = min(target_w / w, target_h / h)
-        new_w = int(w * scale)
-        new_h = int(h * scale)
-        
-        # Resize
-        resized = cv2.resize(
-            img_array,
-            (new_w, new_h),
-            interpolation=self.interpolation
-        )
-        
-        # Create padded image (black padding)
-        padded = np.zeros((target_h, target_w, 3), dtype=img_array.dtype)
-        
-        # Center the image
-        y_offset = (target_h - new_h) // 2
-        x_offset = (target_w - new_w) // 2
-        padded[y_offset:y_offset+new_h, x_offset:x_offset+new_w] = resized
-        
-        return padded
-
-
-class FeatureExtractor:
-    """Orchestrates all feature extraction methods"""
-    
-    def __init__(self, database: ImageDatabase):
-        self.database = database
-        
-        # Import feature extraction modules (with graceful handling if not implemented)
-        self.extractors = {}
-        self._initialize_extractors()
-    
-    def _initialize_extractors(self):
-        """Initialize all feature extraction modules"""
-        from image import (
-            attention_map,
-            characterization,
-            emotional_tone,
-            text_branding,
-            visual_semantics,
-            llm_description
-        )
-        
-        # Check which extractors have an 'extract' function
-        modules = {
-            'attention_map': attention_map,
-            'characterization': characterization,
-            'emotional_tone': emotional_tone,
-            'text_branding': text_branding,
-            'visual_semantics': visual_semantics,
-            'llm_description': llm_description
-        }
-        
-        for name, module in modules.items():
-            if hasattr(module, 'extract'):
-                self.extractors[name] = module.extract
-                logger.info(f"Loaded extractor: {name}")
-            else:
-                logger.warning(f"Extractor not implemented: {name}")
-    
-    def extract_features(self, image_id: str, image_array: np.ndarray) -> ExtractedFeatures:
-        """Extract all features from a standardized image"""
-        start_time = time.time()
-        
-        # Get metadata
-        metadata = self.database.metadata[image_id]
-        
-        # Initialize feature container
-        features = ExtractedFeatures(
-            image_id=image_id,
-            metadata=metadata
-        )
-        
-        # Run each extractor
-        for name, extractor_func in self.extractors.items():
-            try:
-                logger.info(f"Running {name} on {image_id}")
-                result = extractor_func(image_array, image_id)
-                setattr(features, name, result)
-            except Exception as e:
-                logger.error(f"Error in {name} for {image_id}: {str(e)}")
-                setattr(features, name, {"error": str(e)})
-        
-        features.processing_time_total_ms = (time.time() - start_time) * 1000
-        
-        return features
-
-
-class ExtractionPipeline:
-    """Main pipeline for image processing and feature extraction"""
-    
-    def __init__(
-        self,
-        images_dir: str = "ads/images",
-        cache_dir: str = "processed_images",
-        output_dir: str = "extracted_features",
-        target_size: Tuple[int, int] = (1024, 1024),
-        max_workers: int = 4,
-        force_reprocess: bool = False
+        images_dir: str,
+        out_dir: str,
+        target_size: Tuple[int, int],
+        std_workers: int,
+        ext_workers: int,
+        force: bool,
+        deadline_seconds: int,
+        per_image_timeout: Optional[int],
     ):
         self.images_dir = Path(images_dir)
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(exist_ok=True)
-        self.max_workers = max_workers
-        self.force_reprocess = force_reprocess
-        
-        # Initialize components
-        self.standardizer = ImageStandardizer(target_size=target_size)
-        self.database = ImageDatabase(cache_dir=cache_dir)
-        self.feature_extractor = FeatureExtractor(self.database)
-        
-        logger.info(f"Initialized pipeline with {max_workers} workers")
-    
-    def _get_image_files(self) -> List[Path]:
-        """Get all image files from the images directory"""
-        image_extensions = ['.png', '.jpg', '.jpeg']
-        image_files = []
-        
-        for ext in image_extensions:
-            image_files.extend(self.images_dir.glob(f"*{ext}"))
-        
-        logger.info(f"Found {len(image_files)} images in {self.images_dir}")
-        return sorted(image_files)
-    
-    def _standardize_image(self, image_path: Path) -> Tuple[str, bool]:
-        """Standardize a single image"""
-        image_id = image_path.stem
-        
-        # Skip if already processed and not forcing reprocess
-        if not self.force_reprocess and self.database.has_image(image_id):
-            logger.info(f"Skipping {image_id} (already processed)")
-            return image_id, False
-        
-        try:
-            # Standardize image
-            img_array, metadata = self.standardizer.standardize(str(image_path))
-            
-            # Save to database
-            self.database.save_image(image_id, img_array, metadata)
-            
-            logger.info(f"Standardized {image_id}: {metadata.original_size} -> {metadata.standardized_size}")
-            return image_id, True
-        
-        except Exception as e:
-            logger.error(f"Error standardizing {image_id}: {str(e)}")
-            return image_id, False
-    
-    def standardize_all_images(self) -> List[str]:
-        """Standardize all images in parallel"""
-        logger.info("Starting image standardization...")
-        image_files = self._get_image_files()
-        
-        processed_ids = []
-        
-        # Process images in parallel
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = {
-                executor.submit(self._standardize_image, img_path): img_path
-                for img_path in image_files
-            }
-            
-            for future in as_completed(futures):
-                image_id, success = future.result()
-                if success or self.database.has_image(image_id):
-                    processed_ids.append(image_id)
-        
-        # Save metadata
-        self.database.save_metadata()
-        
-        logger.info(f"Standardization complete: {len(processed_ids)} images processed")
-        return processed_ids
-    
-    def _extract_features_for_image(self, image_id: str) -> ExtractedFeatures:
-        """Extract features for a single image"""
-        try:
-            # Load standardized image
-            img_array = self.database.load_image(image_id)
-            
-            if img_array is None:
-                logger.error(f"Could not load image: {image_id}")
+        self.out_dir = Path(out_dir); self.out_dir.mkdir(parents=True, exist_ok=True)
+        self.target_size = target_size
+        self.std_workers = std_workers
+        self.ext_workers = ext_workers
+        self.force = force
+        self.deadline_seconds = deadline_seconds
+        self.per_image_timeout = per_image_timeout
+        self.start_time = time.time()
+
+    # ---- Stage A: standardize ----
+    def standardize_one(self, path: Path):
+        image_id = path.stem
+        img_dir = self.out_dir / image_id
+        img_dir.mkdir(parents=True, exist_ok=True)
+
+        summary_json = img_dir / f"{image_id}_summary.json"
+        if summary_json.exists() and not self.force:
+            # Already processed; just return sentinel to skip Stage B
+            return {"skip": True, "image_id": image_id, "img_dir": img_dir}
+
+        std_pil, std_arr = load_and_standardize(path, self.target_size, keep_aspect=True)
+        std_pil.save(img_dir / f"{image_id}_standardized.png")
+
+        md = Meta(
+            image_id=image_id,
+            original_path=str(path),
+            original_size=Image.open(path).size,
+            standardized_size=std_arr.shape[:2],
+            file_size_bytes=os.path.getsize(path),
+            format=(Image.open(path).format or "unknown"),
+        )
+        return {"skip": False, "image_id": image_id, "img_dir": img_dir, "std_pil": std_pil, "std_arr": std_arr, "meta": md}
+
+    # ---- Stage B: extract ----
+    def extract_one(self, payload) -> Optional[Dict[str, Any]]:
+        if payload.get("skip"):
+            # read and return existing summary (already processed)
+            img_dir = payload["img_dir"]; image_id = payload["image_id"]
+            try:
+                with open(img_dir / f"{image_id}_summary.json", "r") as f:
+                    return json.load(f)
+            except Exception:
                 return None
-            
-            # Extract features
-            features = self.feature_extractor.extract_features(image_id, img_array)
-            
-            logger.info(f"Extracted features for {image_id} in {features.processing_time_total_ms:.2f}ms")
-            return features
-        
+
+        image_id = payload["image_id"]
+        img_dir: Path = payload["img_dir"]
+        std_pil: Image.Image = payload["std_pil"]
+        std_arr: np.ndarray = payload["std_arr"]
+        meta: Meta = payload["meta"]
+
+        t0 = time.time()
+        try:
+            # visual_semantics
+            vs_out = VS.extract(std_arr, image_id)
+            with open(img_dir / f"{image_id}_visual_semantics.json", "w") as f:
+                json.dump(vs_out, f, indent=2, default=_json_default)
+            draw_detections(std_pil, vs_out.get("detections", [])).save(img_dir / f"{image_id}_detections.png")
+            ocr = vs_out.get("ocr", {}) or {}
+            with open(img_dir / f"{image_id}_ocr.txt", "w") as f:
+                f.write((ocr.get("full_text") or "").strip())
+
+            # attention_map
+            am_out = AM.extract(std_arr, image_id)
+            np.savez_compressed(img_dir / f"{image_id}_attention_heatmap.npz", heatmap=am_out.get("heatmap"))
+            hm = am_out.get("heatmap")
+            if isinstance(hm, np.ndarray) and hm.ndim == 2:
+                mmin, mmax = float(hm.min()), float(hm.max())
+                hm01 = (hm - mmin) / (mmax - mmin + 1e-8) if mmax > mmin else np.zeros_like(hm)
+                overlay_heatmap(std_pil, hm01, 0.45).save(img_dir / f"{image_id}_attention_overlay.png")
+            with open(img_dir / f"{image_id}_attention_map.json", "w") as f:
+                json.dump(am_out, f, indent=2, default=_json_default)
+
+            # llm_description (optional)
+            llm_out: Dict[str, Any] = {}
+            if LLM and hasattr(LLM, "extract"):
+                try:
+                    llm_out = LLM.extract(std_arr, image_id)
+                except Exception as e:
+                    llm_out = {"error": str(e)}
+            with open(img_dir / f"{image_id}_llm_description.json", "w") as f:
+                json.dump(llm_out, f, indent=2, default=_json_default)
+
+            # summary
+            meta.processing_time_ms = (time.time() - t0) * 1000.0
+            quick = {
+                "num_detections": len(vs_out.get("detections", [])),
+                "scene_top": (vs_out.get("scene_labels") or [{}])[0:1],
+                "product_category": vs_out.get("product_category"),
+                "ocr_snippet": (ocr.get("full_text") or "")[:160],
+                "attention_entropy": am_out.get("entropy"),
+            }
+            files = {
+                "standardized_png": f"{image_id}_standardized.png",
+                "detections_png": f"{image_id}_detections.png",
+                "attention_overlay_png": f"{image_id}_attention_overlay.png",
+                "attention_heatmap_npz": f"{image_id}_attention_heatmap.npz",
+                "ocr_txt": f"{image_id}_ocr.txt",
+                "visual_semantics_json": f"{image_id}_visual_semantics.json",
+                "attention_map_json": f"{image_id}_attention_map.json",
+                "llm_description_json": f"{image_id}_llm_description.json",
+            }
+            summary = {"image_id": image_id, "metadata": asdict(meta), "files": files, "quicklook": quick}
+            with open(img_dir / f"{image_id}_summary.json", "w") as f:
+                json.dump(summary, f, indent=2, default=_json_default)
+            return summary
         except Exception as e:
-            logger.error(f"Error extracting features for {image_id}: {str(e)}")
+            log.exception(f"[{image_id}] extraction failed: {e}")
             return None
-    
-    def extract_all_features(self, image_ids: Optional[List[str]] = None) -> List[ExtractedFeatures]:
-        """Extract features from all standardized images"""
-        logger.info("Starting feature extraction...")
-        
-        # Use provided IDs or all images in database
-        if image_ids is None:
-            image_ids = list(self.database.metadata.keys())
-        
-        all_features = []
-        
-        # Process in parallel (using ThreadPoolExecutor for I/O bound operations)
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = {
-                executor.submit(self._extract_features_for_image, image_id): image_id
-                for image_id in image_ids
-            }
-            
-            for future in as_completed(futures):
-                features = future.result()
-                if features is not None:
-                    all_features.append(features)
-        
-        logger.info(f"Feature extraction complete: {len(all_features)} images processed")
-        return all_features
-    
-    def save_features(self, features_list: List[ExtractedFeatures]):
-        """Save extracted features to JSON file"""
-        output_file = self.output_dir / "extracted_features.json"
-        
-        # add near the top of the file (once)
-        def _json_default(obj):
-            import numpy as np
-            if isinstance(obj, np.ndarray):
-                return obj.tolist()
-            if isinstance(obj, (np.floating,)):
-                return float(obj)
-            if isinstance(obj, (np.integer,)):
-                return int(obj)
-            return str(obj)
-        
-        # Convert to serializable format
-        features_data = []
-        for features in features_list:
-            data = {
-                'image_id': features.image_id,
-                'metadata': asdict(features.metadata),
-                'processing_time_total_ms': features.processing_time_total_ms,
-                'features': {
-                    'attention_map': features.attention_map,
-                    'characterization': features.characterization,
-                    'emotional_tone': features.emotional_tone,
-                    'text_branding': features.text_branding,
-                    'visual_semantics': features.visual_semantics,
-                    'llm_description': features.llm_description
-                }
-            }
-            features_data.append(data)
-        
-        # Save to file
-        with open(output_file, 'w') as f:
-            json.dump(features_data, f, indent=2, default=_json_default)
-        
-        logger.info(f"Saved features to {output_file}")
-    
-    def run(self) -> List[ExtractedFeatures]:
-        """Run the complete extraction pipeline"""
-        logger.info("=" * 60)
-        logger.info("Starting Image Feature Extraction Pipeline")
-        logger.info("=" * 60)
-        
-        start_time = time.time()
-        
-        # Step 1: Standardize all images
-        logger.info("\n[Step 1/3] Standardizing images...")
-        image_ids = self.standardize_all_images()
-        
-        # Step 2: Extract features
-        logger.info("\n[Step 2/3] Extracting features...")
-        features_list = self.extract_all_features(image_ids)
-        
-        # Step 3: Save results
-        logger.info("\n[Step 3/3] Saving results...")
-        self.save_features(features_list)
-        
-        total_time = time.time() - start_time
-        
-        logger.info("=" * 60)
-        logger.info(f"Pipeline complete in {total_time:.2f} seconds")
-        logger.info(f"Processed {len(features_list)} images")
-        logger.info(f"Average time per image: {(total_time / len(features_list)):.2f}s")
-        logger.info("=" * 60)
-        
-        return features_list
+
+    # ---- pipeline orchestrator ----
+    def run(self) -> List[Dict[str, Any]]:
+        img_paths = sorted([p for p in self.images_dir.glob("*.*") if p.suffix.lower() in {".png", ".jpg", ".jpeg"}])
+        if not img_paths:
+            log.warning(f"No images found in {self.images_dir}")
+            return []
+
+        # Auto ext_workers: if GPU/MPS detected, default to 1 to avoid contention; else 2*cpu
+        if self.ext_workers <= 0:
+            accel = _torch_accel()
+            self.ext_workers = 1 if (accel["cuda"] or accel["mps"]) else max(2, os.cpu_count() or 4)
+
+        log.info(f"[config] std_workers={self.std_workers} ext_workers={self.ext_workers} deadline={self.deadline_seconds}s force={self.force}")
+
+        deadline_at = self.start_time + float(self.deadline_seconds)
+        results: List[Dict[str, Any]] = []
+
+        with ThreadPoolExecutor(max_workers=self.std_workers) as std_pool, \
+             ThreadPoolExecutor(max_workers=self.ext_workers) as ext_pool:
+
+            # kick off all standardization tasks
+            std_futs: Dict[Future, Path] = {std_pool.submit(self.standardize_one, p): p for p in img_paths}
+            ext_futs: List[Future] = []
+
+            for fut in as_completed(std_futs):
+                now = time.time()
+                if now >= deadline_at:
+                    log.warning("Global deadline reached; skipping remaining extractions.")
+                    break
+
+                path = std_futs[fut]
+                try:
+                    payload = fut.result()
+                except Exception as e:
+                    log.exception(f"[std] {path.name} failed: {e}")
+                    continue
+
+                # schedule extraction if time remains
+                if payload is None:
+                    continue
+
+                # If already processed and not --force, load summary quickly
+                if payload.get("skip"):
+                    try:
+                        with open(payload["img_dir"] / f"{payload['image_id']}_summary.json", "r") as f:
+                            results.append(json.load(f))
+                    except Exception:
+                        pass
+                    continue
+
+                # check deadline before scheduling extraction
+                if time.time() + 1.0 >= deadline_at:
+                    log.warning(f"[skip] {payload['image_id']} (would exceed deadline)")
+                    continue
+
+                ext_fut = ext_pool.submit(self.extract_one, payload)
+                ext_futs.append(ext_fut)
+
+            # collect finished extractions with optional per-image timeout
+            for ef in as_completed(ext_futs, timeout=max(0.1, deadline_at - time.time()) if deadline_at > time.time() else None):
+                try:
+                    res = ef.result(timeout=self.per_image_timeout) if self.per_image_timeout else ef.result()
+                    if res:
+                        results.append(res)
+                except Exception as e:
+                    log.warning(f"[extract] a task timed out or failed: {e}")
+
+        # project-level CSV index
+        index_csv = self.out_dir / "features_index.csv"
+        try:
+            keys = [
+                "image_id","original_path","original_size","standardized_size","file_size_bytes","format",
+                "processing_time_ms","num_detections","product_category_from","product_category_top",
+                "scene_top_label","scene_top_score","ocr_chars","attention_entropy",
+            ]
+            with open(index_csv, "w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=keys); w.writeheader()
+                for s in results:
+                    md = s["metadata"]; q = s["quicklook"]
+                    pc = (q.get("product_category") or {})
+                    pc_top = (pc.get("labels") or [{}])[0] if pc else {}
+                    scene_top = (q.get("scene_top") or [{}])
+                    row = {
+                        "image_id": s["image_id"],
+                        "original_path": md["original_path"],
+                        "original_size": tuple(md["original_size"]),
+                        "standardized_size": tuple(md["standardized_size"]),
+                        "file_size_bytes": md["file_size_bytes"],
+                        "format": md["format"],
+                        "processing_time_ms": f"{md['processing_time_ms']:.1f}",
+                        "num_detections": q.get("num_detections", 0),
+                        "product_category_from": pc.get("from"),
+                        "product_category_top": pc_top.get("label"),
+                        "scene_top_label": (scene_top[0].get("label") if scene_top else None),
+                        "scene_top_score": (f"{scene_top[0].get('score',0):.3f}" if scene_top else None),
+                        "ocr_chars": len(q.get("ocr_snippet") or ""),
+                        "attention_entropy": q.get("attention_entropy"),
+                    }
+                    w.writerow(row)
+            log.info(f"[OK] Wrote index: {index_csv}")
+        except Exception as e:
+            log.warning(f"Could not write index CSV: {e}")
+
+        return results
 
 
+# ----------------- CLI -----------------
 def main():
-    """Main entry point for the extraction pipeline"""
-    # Configure pipeline
-    pipeline = ExtractionPipeline(
-        images_dir="ads/images",
-        cache_dir="processed_images",
-        output_dir="extracted_features",
-        target_size=(1024, 1024),  # Standard size for all images
-        max_workers=4,  # Parallel processing workers
-        force_reprocess=False  # Set to True to reprocess all images
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--images_dir", type=str, default="ads/images")
+    ap.add_argument("--out_dir", type=str, default="extracted_features")
+    ap.add_argument("--size", nargs=2, type=int, default=(1024, 1024), help="Target size W H")
+    ap.add_argument("--std_workers", type=int, default=max(2, (os.cpu_count() or 4)//2), help="Parallel workers for standardization")
+    ap.add_argument("--ext_workers", type=str, default="auto", help="'auto' or integer for extraction pool size")
+    ap.add_argument("--deadline_seconds", type=int, default=300, help="Global time budget (seconds)")
+    ap.add_argument("--per_image_timeout", type=int, default=0, help="Optional timeout per extraction (seconds, 0=disabled)")
+    ap.add_argument("--force", action="store_true", help="Re-run even if outputs exist")
+    args = ap.parse_args()
+
+    # parse ext_workers
+    if args.ext_workers.strip().lower() == "auto":
+        ext_workers = 0  # auto inside Runner.run()
+    else:
+        try:
+            ext_workers = max(1, int(args.ext_workers))
+        except Exception:
+            ext_workers = 1
+
+    runner = Runner(
+        images_dir=args.images_dir,
+        out_dir=args.out_dir,
+        target_size=(args.size[0], args.size[1]),
+        std_workers=max(1, int(args.std_workers)),
+        ext_workers=ext_workers,
+        force=args.force,
+        deadline_seconds=max(30, int(args.deadline_seconds)),
+        per_image_timeout=(int(args.per_image_timeout) if int(args.per_image_timeout) > 0 else None),
     )
-    
-    # Run pipeline
-    features = pipeline.run()
-    
-    return features
+    t0 = time.time()
+    summaries = runner.run()
+    dt = time.time() - t0
+    log.info(f"Processed {len(summaries)} images in {dt:.1f}s")
+    log.info(f"Artifacts folder: {Path(args.out_dir).resolve()}")
 
 
 if __name__ == "__main__":

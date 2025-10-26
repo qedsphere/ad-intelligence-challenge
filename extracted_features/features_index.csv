@@ -1,0 +1,19 @@
+image_id,original_path,original_size,standardized_size,file_size_bytes,format,processing_time_ms,num_detections,product_category_from,product_category_top,scene_top_label,scene_top_score,ocr_chars,attention_entropy
+i0002,ads/images/i0002.png,"(430, 645)","(1024, 1024)",197559,PNG,9371.1,0,clip_image,coupon,text-heavy ad,0.167,160,9.622652875194543
+i0006,ads/images/i0006.png,"(430, 625)","(1024, 1024)",286821,PNG,3699.7,1,clip_image,bagel,breakfast scene,0.158,160,8.770423771071744
+i0003,ads/images/i0003.png,"(555, 717)","(1024, 1024)",321891,PNG,6101.0,3,clip_image,coupon,text-heavy ad,0.221,160,9.55591479423902
+i0004,ads/images/i0004.png,"(430, 618)","(1024, 1024)",241063,PNG,4792.5,2,clip_image,coupon,text-heavy ad,0.291,121,9.148027679243695
+i0001,ads/images/i0001.png,"(430, 732)","(1024, 1024)",414762,PNG,5609.0,4,clip_image,coupon,text-heavy ad,0.269,138,9.290499096321174
+i0005,ads/images/i0005.png,"(430, 625)","(1024, 1024)",403281,PNG,4393.9,2,clip_image,bagel,text-heavy ad,0.174,160,8.822556393375836
+i0007,ads/images/i0007.png,"(430, 436)","(1024, 1024)",52972,PNG,4666.3,3,clip_image,pretzel,text-heavy ad,0.197,160,9.069305252874596
+i0008,ads/images/i0008.png,"(430, 604)","(1024, 1024)",245637,PNG,3224.7,1,clip_image,price tag,text-heavy ad,0.214,146,8.456539186058084
+i0010,ads/images/i0010.png,"(520, 879)","(1024, 1024)",399687,PNG,3918.6,0,clip_image,coupon,text-heavy ad,0.181,157,8.767410594731402
+i0009,ads/images/i0009.png,"(520, 879)","(1024, 1024)",541126,PNG,4619.1,1,clip_image,coupon,text-heavy ad,0.248,90,8.985808102470212
+i0011,ads/images/i0011.png,"(555, 737)","(1024, 1024)",306593,PNG,5038.8,1,clip_image,app icon,text-heavy ad,0.240,160,9.222066719000532
+i0012,ads/images/i0012.png,"(430, 744)","(1024, 1024)",327420,PNG,4751.9,0,clip_image,coupon,text-heavy ad,0.265,160,9.066811137548848
+i0013,ads/images/i0013.png,"(430, 604)","(1024, 1024)",117394,PNG,5604.2,2,clip_image,discount badge,text-heavy ad,0.239,160,8.645029027525549
+i0016,ads/images/i0016.png,"(430, 931)","(1024, 1024)",102286,PNG,5066.7,0,clip_image,coupon,text-heavy ad,0.197,160,9.176737487440878
+i0014,ads/images/i0014.png,"(430, 872)","(1024, 1024)",267637,PNG,6992.1,0,clip_image,coupon,text-heavy ad,0.301,54,9.537133587898484
+i0017,ads/images/i0017.png,"(430, 706)","(1024, 1024)",108604,PNG,5321.5,1,clip_image,watch,text-heavy ad,0.218,160,9.18253317407737
+i0018,ads/images/i0018.png,"(430, 921)","(1024, 1024)",715310,PNG,5802.5,1,clip_image,watch,text-heavy ad,0.241,49,9.509185677766672
+i0015,ads/images/i0015.png,"(430, 625)","(1024, 1024)",432090,PNG,7005.3,4,clip_image,coupon,text-heavy ad,0.201,160,9.456607051518208

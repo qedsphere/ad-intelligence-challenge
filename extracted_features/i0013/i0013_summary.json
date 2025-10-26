@@ -1,0 +1,56 @@
+{
+  "image_id": "i0013",
+  "metadata": {
+    "image_id": "i0013",
+    "original_path": "ads/images/i0013.png",
+    "original_size": [
+      430,
+      604
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 117394,
+    "format": "PNG",
+    "processing_time_ms": 5604.222774505615
+  },
+  "files": {
+    "standardized_png": "i0013_standardized.png",
+    "detections_png": "i0013_detections.png",
+    "attention_overlay_png": "i0013_attention_overlay.png",
+    "attention_heatmap_npz": "i0013_attention_heatmap.npz",
+    "ocr_txt": "i0013_ocr.txt",
+    "visual_semantics_json": "i0013_visual_semantics.json",
+    "attention_map_json": "i0013_attention_map.json",
+    "llm_description_json": "i0013_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 2,
+    "scene_top": [
+      {
+        "label": "text-heavy ad",
+        "score": 0.23859994113445282
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "discount badge",
+          "score": 0.06899288296699524
+        },
+        {
+          "label": "coupon",
+          "score": 0.06385082006454468
+        },
+        {
+          "label": "price tag",
+          "score": 0.05729625001549721
+        }
+      ]
+    },
+    "ocr_snippet": "@ Freeway Insurance xX b4 Stop overpaying by hundreds of dollars for your auto insurance. batons Compare and Save up to Auto Insurance Check Rates Get Auto Insu",
+    "attention_entropy": 8.645029027525549
+  }
+}
