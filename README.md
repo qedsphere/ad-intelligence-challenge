@@ -32,10 +32,11 @@ brew install wget
 ```
 git clone https://github.com/phuselab/tppgaze
 cd tppgaze
-pip install -r requirements.txt
+pip install -r requirements
 ```
+(If you are having issues with tppgaze, remove tppgaze, then redo this instruction (2).)
 
-3. Within the adintelligence folder, run the following.
+3. Within the tppgaze folder still, run the following.
 ```
 bash download_models.sh
 ```
