@@ -42,7 +42,4 @@ Optional flags (if running main.py directly):
 Optimized with a streaming scheduler and faster-whisper backend.
 On M-series Mac, 23 videos process in ~2.2 minutes.
 
-## Known Issues
-- OpenAI Whisper on MPS may encounter NaNs; CPU is used by default for OpenAI backend.
-- Demucs runs sequentially on MPS; CPU work overlaps to hide GPU latency.
 
