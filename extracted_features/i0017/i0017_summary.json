@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 108604,
     "format": "PNG",
-    "processing_time_ms": 5321.481943130493
+    "processing_time_ms": 4462.43691444397
   },
   "files": {
     "standardized_png": "i0017_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "{S) Movado x \\ } \u00a2 Beautiful design meets expert craftsmanship to match your style. Discover Movado Watches. Movado | Museum Classic Shop Now Men's Two-Toned Br",
-    "attention_entropy": 9.18253317407737
+    "attention_entropy": 9.03537672681142
   }
 }

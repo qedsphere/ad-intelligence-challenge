@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 306593,
     "format": "PNG",
-    "processing_time_ms": 5038.832902908325
+    "processing_time_ms": 5010.263204574585
   },
   "files": {
     "standardized_png": "i0011_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "NICHE @S Turn interest into applications, With the ultimate personalized communications platform. Hi Emily! It\u2019s Central Academy. We have a special message abou",
-    "attention_entropy": 9.222066719000532
+    "attention_entropy": 9.270964134751107
   }
 }

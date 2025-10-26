@@ -1,0 +1,7 @@
+=== Summary for i0001 ===
+Detections: 4
+Scene: text-heavy ad (0.27)
+Product category: coupon [from clip_image]
+OCR snippet: th FREE t @Crunch : EXP TOMORROW! § GET 1 MONTH FREE! MEMBERSHIPS STARTING AT §9.99/M0 * JOIN AT CRUNCH.COM 1¢ Down + 1 ...
+Attention entropy: 8.78
+Processing time: 4.24s

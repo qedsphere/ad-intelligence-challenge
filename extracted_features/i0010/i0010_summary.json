@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 399687,
     "format": "PNG",
-    "processing_time_ms": 3918.5540676116943
+    "processing_time_ms": 3676.1627197265625
   },
   "files": {
     "standardized_png": "i0010_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "sleep \u00a9 number SLEEP UP TO 15 cooler ClimateCool\u201d smart bed \u2018on the range of maximum active cooling in independent microclimates on the ClimateCool\u2019. Cooling",
-    "attention_entropy": 8.767410594731402
+    "attention_entropy": 8.873182912565085
   }
 }

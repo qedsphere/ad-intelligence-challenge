@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 414762,
     "format": "PNG",
-    "processing_time_ms": 5609.044790267944
+    "processing_time_ms": 4236.371994018555
   },
   "files": {
     "standardized_png": "i0001_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "th FREE t @Crunch : EXP TOMORROW! \u00a7 GET 1 MONTH FREE! MEMBERSHIPS STARTING AT \u00a79.99/M0 * JOIN AT CRUNCH.COM 1\u00a2 Down + 1 Month FREE Sign up",
-    "attention_entropy": 9.290499096321174
+    "attention_entropy": 8.783320317807158
   }
 }

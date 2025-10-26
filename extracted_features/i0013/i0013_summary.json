@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 117394,
     "format": "PNG",
-    "processing_time_ms": 5604.222774505615
+    "processing_time_ms": 4268.921852111816
   },
   "files": {
     "standardized_png": "i0013_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "@ Freeway Insurance xX b4 Stop overpaying by hundreds of dollars for your auto insurance. batons Compare and Save up to Auto Insurance Check Rates Get Auto Insu",
-    "attention_entropy": 8.645029027525549
+    "attention_entropy": 8.944247114203138
   }
 }

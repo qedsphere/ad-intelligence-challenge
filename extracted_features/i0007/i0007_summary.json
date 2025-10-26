@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 52972,
     "format": "PNG",
-    "processing_time_ms": 4666.321039199829
+    "processing_time_ms": 4003.445863723755
   },
   "files": {
     "standardized_png": "i0007_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "6) xeroshoes Sponsored Shop Now xeroshoes Designed for people who never stop moving. Xero Shoes blend natural flexibility with soft, lightweight comfort. wv\u00bb le",
-    "attention_entropy": 9.069305252874596
+    "attention_entropy": 8.970661695746648
   }
 }

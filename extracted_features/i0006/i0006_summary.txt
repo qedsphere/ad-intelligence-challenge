@@ -1,0 +1,7 @@
+=== Summary for i0006 ===
+Detections: 1
+Scene: breakfast scene (0.16)
+Product category: bagel [from clip_image]
+OCR snippet: Einstein Bros. Bagels Here for a fun time not a long time! Try the NEW Pretzel Bagel Double Dipper with Beer Cheese Shme...
+Attention entropy: 9.67
+Processing time: 5.55s

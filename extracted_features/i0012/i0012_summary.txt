@@ -1,0 +1,7 @@
+=== Summary for i0012 ===
+Detections: 0
+Scene: text-heavy ad (0.27)
+Product category: coupon [from clip_image]
+OCR snippet: $2,000 to put toward college could be yours. Apply for Niche's $2k no essay scholarship in minutes for a chance SEPTEMBE...
+Attention entropy: 9.08
+Processing time: 4.32s

@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 321891,
     "format": "PNG",
-    "processing_time_ms": 6100.976228713989
+    "processing_time_ms": 4128.464937210083
   },
   "files": {
     "standardized_png": "i0003_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "Mercedes-Benz Vans USA 3 Years or Sprinter ~Summer Sales Event - For 2025 Cargo and Crew Sprinters, get 52,000\" | Customer Cash Customer Cash for Medium Fleet T",
-    "attention_entropy": 9.55591479423902
+    "attention_entropy": 8.580968409349813
   }
 }

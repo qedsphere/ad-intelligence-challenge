@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 241063,
     "format": "PNG",
-    "processing_time_ms": 4792.516231536865
+    "processing_time_ms": 5071.345806121826
   },
   "files": {
     "standardized_png": "i0004_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "GLE 45 3 due at signing\u201d the 2026 GLE 450 AMATIC Coupe Optional equipment shown. The 2026 GLE 450 4MATIC Learn more Coupe",
-    "attention_entropy": 9.148027679243695
+    "attention_entropy": 9.42660208855336
   }
 }

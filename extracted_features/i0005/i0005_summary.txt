@@ -1,0 +1,7 @@
+=== Summary for i0005 ===
+Detections: 2
+Scene: text-heavy ad (0.17)
+Product category: bagel [from clip_image]
+OCR snippet: . : e Einstein Bros. Bagels x : Try the NEW Oktoberfest Egg Sandwich — Pretzel Bagel §Q with Bacon, Ham, Swiss & Beer Ch...
+Attention entropy: 8.59
+Processing time: 4.32s

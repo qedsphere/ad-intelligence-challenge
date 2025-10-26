@@ -1,0 +1,7 @@
+=== Summary for i0009 ===
+Detections: 1
+Scene: text-heavy ad (0.25)
+Product category: coupon [from clip_image]
+OCR snippet: BACK PAIN relief ee Prices higher in AK and HI. Relieves pressure Promoted by Sleep Number
+Attention entropy: 8.57
+Processing time: 3.86s

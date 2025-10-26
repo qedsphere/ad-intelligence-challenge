@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 286821,
     "format": "PNG",
-    "processing_time_ms": 3699.686050415039
+    "processing_time_ms": 5547.287225723267
   },
   "files": {
     "standardized_png": "i0006_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "Einstein Bros. Bagels Here for a fun time not a long time! Try the NEW Pretzel Bagel Double Dipper with Beer Cheese Shmear & mustard ROA Pretzel Bagel Double Di",
-    "attention_entropy": 8.770423771071744
+    "attention_entropy": 9.669623844353815
   }
 }

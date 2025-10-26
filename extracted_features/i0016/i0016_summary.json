@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 102286,
     "format": "PNG",
-    "processing_time_ms": 5066.683053970337
+    "processing_time_ms": 4242.892026901245
   },
   "files": {
     "standardized_png": "i0016_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": ", Paleovalley \u2014-) paleovalley WE MESSED UP...\u00a9 We spent years obsessing over: - 100% grass fed AND finished cows - Clean, high quality, collagen-rich protein - ",
-    "attention_entropy": 9.176737487440878
+    "attention_entropy": 8.97128431940725
   }
 }

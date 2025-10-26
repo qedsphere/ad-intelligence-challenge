@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 432090,
     "format": "PNG",
-    "processing_time_ms": 7005.2618980407715
+    "processing_time_ms": 6063.608169555664
   },
   "files": {
     "standardized_png": "i0015_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "Paleovalley x Huge Sale Alert! This is your chance to stock up and save big on the cleanest bone broth protein out there Paleovalley\u2019s Grass Fed Bone Broth Prot",
-    "attention_entropy": 9.456607051518208
+    "attention_entropy": 9.375348115492587
   }
 }

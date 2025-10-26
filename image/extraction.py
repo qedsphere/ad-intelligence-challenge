@@ -170,7 +170,7 @@ class Runner:
         )
         return {"skip": False, "image_id": image_id, "img_dir": img_dir, "std_pil": std_pil, "std_arr": std_arr, "meta": md}
 
-    # ---- Stage B: extract ----
+        # ---- Stage B: extract ----
     def extract_one(self, payload) -> Optional[Dict[str, Any]]:
         if payload.get("skip"):
             # read and return existing summary (already processed)
@@ -219,7 +219,7 @@ class Runner:
             with open(img_dir / f"{image_id}_llm_description.json", "w") as f:
                 json.dump(llm_out, f, indent=2, default=_json_default)
 
-            # summary
+            # summary JSON
             meta.processing_time_ms = (time.time() - t0) * 1000.0
             quick = {
                 "num_detections": len(vs_out.get("detections", [])),
@@ -241,6 +241,28 @@ class Runner:
             summary = {"image_id": image_id, "metadata": asdict(meta), "files": files, "quicklook": quick}
             with open(img_dir / f"{image_id}_summary.json", "w") as f:
                 json.dump(summary, f, indent=2, default=_json_default)
+
+            # ✅ NEW: write readable text summary
+            summary_txt = img_dir / f"{image_id}_summary.txt"
+            with open(summary_txt, "w") as f:
+                f.write(f"=== Summary for {image_id} ===\n")
+                f.write(f"Detections: {quick['num_detections']}\n")
+                if quick.get("scene_top"):
+                    scene = quick["scene_top"][0]
+                    f.write(f"Scene: {scene.get('label')} ({scene.get('score', 0):.2f})\n")
+                pc = quick.get("product_category") or {}
+                if pc:
+                    labels = pc.get("labels") or []
+                    if labels:
+                        f.write(f"Product category: {labels[0].get('label')} [from {pc.get('from')}]\n")
+                snippet = quick.get("ocr_snippet", "").strip()
+                if snippet:
+                    f.write(f"OCR snippet: {snippet[:120]}{'...' if len(snippet) > 120 else ''}\n")
+                ent = quick.get("attention_entropy")
+                if ent is not None:
+                    f.write(f"Attention entropy: {ent:.2f}\n")
+                f.write(f"Processing time: {meta.processing_time_ms / 1000.0:.2f}s\n")
+
             return summary
         except Exception as e:
             log.exception(f"[{image_id}] extraction failed: {e}")

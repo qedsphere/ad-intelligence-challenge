@@ -1,0 +1,7 @@
+=== Summary for i0018 ===
+Detections: 1
+Scene: text-heavy ad (0.24)
+Product category: watch [from clip_image]
+OCR snippet: movado Christian McCaffrey wears Museum Imperiale
+Attention entropy: 8.65
+Processing time: 5.02s

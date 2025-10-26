@@ -1,0 +1,7 @@
+=== Summary for i0003 ===
+Detections: 3
+Scene: text-heavy ad (0.22)
+Product category: coupon [from clip_image]
+OCR snippet: Mercedes-Benz Vans USA 3 Years or Sprinter ~Summer Sales Event - For 2025 Cargo and Crew Sprinters, get 52,000" | Custom...
+Attention entropy: 8.58
+Processing time: 4.13s

@@ -1,0 +1,7 @@
+=== Summary for i0017 ===
+Detections: 1
+Scene: text-heavy ad (0.22)
+Product category: watch [from clip_image]
+OCR snippet: {S) Movado x \ } ¢ Beautiful design meets expert craftsmanship to match your style. Discover Movado Watches. Movado | Mu...
+Attention entropy: 9.04
+Processing time: 4.46s

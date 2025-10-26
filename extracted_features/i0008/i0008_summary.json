@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 245637,
     "format": "PNG",
-    "processing_time_ms": 3224.7369289398193
+    "processing_time_ms": 4489.999055862427
   },
   "files": {
     "standardized_png": "i0008_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "Xero Shoes x $ e Save 10% sitewide on foot-shaped comfort\u2014zero-drop, flexible footwear for natural movement. XERGSHOES 10% Off Sitewide Learn more",
-    "attention_entropy": 8.456539186058084
+    "attention_entropy": 9.211716862759198
   }
 }

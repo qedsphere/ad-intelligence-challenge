@@ -1,0 +1,7 @@
+=== Summary for i0007 ===
+Detections: 3
+Scene: text-heavy ad (0.20)
+Product category: pretzel [from clip_image]
+OCR snippet: 6) xeroshoes Sponsored Shop Now xeroshoes Designed for people who never stop moving. Xero Shoes blend natural flexibilit...
+Attention entropy: 8.97
+Processing time: 4.00s

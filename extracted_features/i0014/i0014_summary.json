@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 267637,
     "format": "PNG",
-    "processing_time_ms": 6992.135763168335
+    "processing_time_ms": 6135.567188262939
   },
   "files": {
     "standardized_png": "i0014_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "#DrivingSavings Get Car Insurance ASLOWASA $4.50 ADAY*",
-    "attention_entropy": 9.537133587898484
+    "attention_entropy": 9.349964654766628
   }
 }

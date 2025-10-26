@@ -1,0 +1,7 @@
+=== Summary for i0014 ===
+Detections: 0
+Scene: text-heavy ad (0.30)
+Product category: coupon [from clip_image]
+OCR snippet: #DrivingSavings Get Car Insurance ASLOWASA $4.50 ADAY*
+Attention entropy: 9.35
+Processing time: 6.14s
