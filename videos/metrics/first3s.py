@@ -30,7 +30,7 @@ def _motion_diff(a_bgr, b_bgr) -> float:
 
 def _text_coverage(img_bgr) -> float:
     gray = get_gray(img_bgr)
-    mser = cv2.MSER_create(_min_area=60) if hasattr(cv2.MSER_create, "__call__") else cv2.MSER_create()
+    mser = cv2.MSER_create(min_area=60) if hasattr(cv2.MSER_create, "__call__") else cv2.MSER_create()
     regions, _ = mser.detectRegions(gray)
     h, w = gray.shape[:2]
     area = 0

@@ -8,17 +8,18 @@ import concurrent.futures as futures
 import importlib
 import traceback
 import time
-
+import numpy as np
+import json
 # Serial videos, parallel tasks per video
 PARALLEL_TASKS = True
-MAX_TASK_WORKERS = max(1, (os.cpu_count() or 4) - 1)
+MAX_TASK_WORKERS = max(1, (os.cpu_count() or 8) - 3)
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "ads" / "videos"
 OUTPUT_CSV = ROOT / "video_features.csv"
 
 # Analysis knobs
-TARGET_FPS = 12.0
+TARGET_FPS = 6.0
 SHORT_EDGE = 576
 MAX_FRAMES = 300
 
@@ -32,6 +33,21 @@ W_MOTION_MEAN = 0.10
 W_PRODUCT_AREA = 0.10
 W_TEXT_TOPK = 0.05
 W_MONTAGE_DENSITY = 0.05
+# New metrics weights
+W_THUMB_TOP = 0.05
+W_NOVELTY_PEAK = -0.05
+W_NOVELTY_ANOMALY = -0.05
+W_FACE_TIME_RATIO = 0.05
+W_FACE_AREA = 0.05
+W_WARM_COOL = 0.00
+W_PALETTE_STABILITY = -0.05
+W_CLUTTER = -0.05
+W_ISOLATION = 0.05
+W_AR_CLASS = 0.02
+W_LETTERBOX = -0.05
+W_SIMPLICITY = 0.05
+W_CENTER_SALIENCY = 0.03
+W_SAFE_TEXT = 0.03
 
 # Metrics modules map
 # wave 1: frame-only
@@ -44,11 +60,21 @@ WAVE1 = [
     ("text_dense", "metrics.text_dense"),
     ("end_card", "metrics.end_card"),
     ("loop_readiness", "metrics.loop_readiness"),
+    ("faces_gaze", "metrics.faces_gaze"),
+    ("color_palette", "metrics.color_palette"),
+    ("gestalt", "metrics.gestalt"),
+    ("platform_norms", "metrics.platform_norms"),
+    ("semantic", "metrics.semantic"),
+    ("safe_area", "metrics.safe_area"),
 ]
-# wave 2: depends on shot_detection
+# wave 2: depends on shot_detection and/or other wave1 outputs
 WAVE2 = [
     ("montage_fastcuts", "metrics.montage_fastcuts"),
+    ("novelty", "metrics.novelty"),
+    ("thumbnails", "metrics.thumbnails"),
 ]
+
+DEPS_KEYS = {"montage_fastcuts", "novelty", "thumbnails", "cta_spans"}
 
 
 def list_videos(data_dir: Path) -> List[Path]:
@@ -64,12 +90,9 @@ def run_wave(frames, wave, deps: Dict[str, Any], pool: futures.Executor) -> Dict
     def run_task(key, modpath):
         try:
             mod = _import(modpath)
-            if key == "montage_fastcuts":
-                out = mod.compute(frames, deps)
-            elif key in ("cta_spans",):
+            if key in DEPS_KEYS:
                 out = mod.compute(frames, deps)
             else:
-                # metric modules with compute(frames)
                 out = mod.compute(frames)
             return key, out
         except Exception as e:
@@ -95,40 +118,14 @@ def extract_frames(path: Path):
     return frames
 
 
-def score_video(all_feats: Dict[str, Any]) -> float:
-    # Weighted composite (adjust weights above)
-    s = 0.0
-    sd = all_feats.get("shot_detection", {})
-    f3 = all_feats.get("first3s", {})
-    cta = all_feats.get("cta_spans", {})
-    endc = all_feats.get("end_card", {})
-    loopr = all_feats.get("loop_readiness", {})
-    textd = all_feats.get("text_dense", {})
-    motion = all_feats.get("motion_bursts", {})
-    reveal = all_feats.get("product_reveal", {})
-    montage = all_feats.get("montage_fastcuts", {})
-
-    s += W_NUM_SHOTS * float(sd.get("num_shots", 0))
-    s += W_START_STRENGTH * float(f3.get("start_strength", 0.0))
-    s += W_CTA_PRESENT * (1.0 if bool(cta.get("cta_present", False)) else 0.0)
-    s += W_ENDCARD_READABILITY * float(endc.get("endcard_readability", 0.0))
-    s += W_LOOP_READINESS * float(loopr.get("loop_readiness_score", 0.0))
-    s += W_MOTION_MEAN * float(motion.get("motion_intensity_mean", 0.0))
-    s += W_PRODUCT_AREA * float(reveal.get("max_product_area_ratio", 0.0))
-    s += W_TEXT_TOPK * float(len(textd.get("top_text", [])))
-    s += W_MONTAGE_DENSITY * float(montage.get("peak_cut_density", 0.0))
-    return float(s)
-
-
-def main() -> int:
+def main() -> List[Dict[str, Any]]:
     videos = list_videos(DATA_DIR)
     if not videos:
         print(f"No videos found in {DATA_DIR}")
-        return 1
+        return []
     print(f"Processing {len(videos)} videos serially; tasks parallel={PARALLEL_TASKS} (workers={MAX_TASK_WORKERS})")
 
-    rows: List[Dict[str, Any]] = []
-    total_elapsed = 0.0
+    results: List[Dict[str, Any]] = []
 
     with futures.ThreadPoolExecutor(max_workers=MAX_TASK_WORKERS) as pool:
         for path in videos:
@@ -138,36 +135,23 @@ def main() -> int:
             # Wave 1: frame-only tasks
             wave1_out = run_wave(frames, WAVE1, deps={}, pool=pool)
             # Wave 2: tasks that depend on shot_detection
-            deps = {"shot_detection": wave1_out.get("shot_detection", {})}
+            deps = {
+                "shot_detection": wave1_out.get("shot_detection", {}),
+                "end_card": wave1_out.get("end_card", {}),
+                "text_dense": wave1_out.get("text_dense", {}),
+            }
             wave2_out = run_wave(frames, WAVE2, deps=deps, pool=pool)
             all_out = {**wave1_out, **wave2_out}
-            score = score_video(all_out)
             elapsed_s = time.perf_counter() - t0
-            total_elapsed += elapsed_s
-            flat: Dict[str, Any] = {"file": path.name, "score": score, "elapsed_s": elapsed_s}
-            # flatten some keys (shallow)
-            for k, v in all_out.items():
-                if isinstance(v, dict):
-                    for ik, iv in v.items():
-                        if isinstance(iv, (str, int, float, bool)):
-                            flat[f"{k}.{ik}"] = iv
-            rows.append(flat)
+            per_video: Dict[str, Any] = {"file": path.name, "elapsed_s": elapsed_s}
+            per_video.update(all_out)
+            results.append(per_video)
             print(f"Processed in {elapsed_s:.2f}s")
 
-    rows.sort(key=lambda r: r.get("score", 0.0), reverse=True)
-    with OUTPUT_CSV.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=sorted({k for r in rows for k in r.keys()}))
-        writer.writeheader()
-        for r in rows:
-            writer.writerow(r)
-
-    print("\nVideos in order of score:")
-    for r in rows:
-        print(f"  {r['file']}: score={r['score']:.3f} | {r['elapsed_s']:.2f}s")
-    print(f"Total processing time: {total_elapsed:.2f}s")
-    print(f"Wrote {len(rows)} rows to {OUTPUT_CSV}")
-    return 0
+    return results
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    out = main()
+    print(json.dumps(out, indent=2))
+    sys.exit(0)

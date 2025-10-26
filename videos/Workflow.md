@@ -1,6 +1,6 @@
 ## Video Feature Extraction Workflow
 
-This document describes our end-to-end workflow for extracting high-value visual signals from ad videos (no audio). It maps goals to concrete features, algorithms, and implementation steps. The notebook (`videos/main.py`) contains only brief step notes and executable code; refer here for full details.
+This document describes our workflow for extracting visual signals from ad videos (no audio). It maps goals to concrete features, algorithms, and implementation steps. The notebook (`videos/demo_interactive_processing.py`) contains only brief step notes and executable code; refer here for full details.
 
 ### Constraints and Goals
 - Fast and scalable: total run < 5 minutes on provided dataset; batch-friendly

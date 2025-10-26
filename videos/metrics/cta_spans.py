@@ -9,7 +9,7 @@ MSER_MIN_AREA = 60
 
 def _text_cov_contrast(img_bgr) -> Tuple[float, float]:
     gray = get_gray(img_bgr)
-    mser = cv2.MSER_create(_min_area=MSER_MIN_AREA) if hasattr(cv2.MSER_create, "__call__") else cv2.MSER_create()
+    mser = cv2.MSER_create(min_area=MSER_MIN_AREA) if hasattr(cv2.MSER_create, "__call__") else cv2.MSER_create()
     regions, _ = mser.detectRegions(gray)
     h, w = gray.shape[:2]
     area = 0
