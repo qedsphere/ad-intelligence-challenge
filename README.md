@@ -23,24 +23,22 @@ brew install tesseract
 
 Required for the attention map features.
 
-- Add submodule to Python path when running:
-  ```bash
-  export PYTHONPATH="$(pwd)/tppgaze:$PYTHONPATH"
-  ```
-- Download model files:
-  ```
-  bash tppgaze/download_models.sh
-  ```
-- Optional: set explicit paths (if stored elsewhere):
-  ```bash
-  export TPPGAZE_CFG="/abs/path/to/config.yaml"
-  export TPPGAZE_CKPT="/abs/path/to/model_transformer.pth"
-  ```
-- Sanity checks:
-  ```bash
-  PYTHONPATH="$(pwd)/tppgaze:$PYTHONPATH" venv/bin/python test_attention_minimal.py
-  PYTHONPATH="$(pwd)/tppgaze:$PYTHONPATH" venv/bin/python -m image.extraction
-  ```
+1. Install brew dependencies:
+```
+brew install wget
+```
+
+2. Follow the setup instructions at https://github.com/phuselab/tppgaze:
+```
+git clone https://github.com/phuselab/tppgaze
+cd tppgaze
+pip install -r requirements.txt
+```
+
+3. Within the adintelligence folder, run the following.
+```
+bash download_models.sh
+```
 
 ## Citation
 
