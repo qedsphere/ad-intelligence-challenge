@@ -1,0 +1,56 @@
+{
+  "image_id": "i0004",
+  "metadata": {
+    "image_id": "i0004",
+    "original_path": "ads/images/i0004.png",
+    "original_size": [
+      430,
+      618
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 241063,
+    "format": "PNG",
+    "processing_time_ms": 4792.516231536865
+  },
+  "files": {
+    "standardized_png": "i0004_standardized.png",
+    "detections_png": "i0004_detections.png",
+    "attention_overlay_png": "i0004_attention_overlay.png",
+    "attention_heatmap_npz": "i0004_attention_heatmap.npz",
+    "ocr_txt": "i0004_ocr.txt",
+    "visual_semantics_json": "i0004_visual_semantics.json",
+    "attention_map_json": "i0004_attention_map.json",
+    "llm_description_json": "i0004_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 2,
+    "scene_top": [
+      {
+        "label": "text-heavy ad",
+        "score": 0.290542870759964
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "coupon",
+          "score": 0.06070118024945259
+        },
+        {
+          "label": "QR code",
+          "score": 0.05435224622488022
+        },
+        {
+          "label": "price tag",
+          "score": 0.045387499034404755
+        }
+      ]
+    },
+    "ocr_snippet": "GLE 45 3 due at signing\u201d the 2026 GLE 450 AMATIC Coupe Optional equipment shown. The 2026 GLE 450 4MATIC Learn more Coupe",
+    "attention_entropy": 9.148027679243695
+  }
+}

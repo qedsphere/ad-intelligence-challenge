@@ -1,0 +1,56 @@
+{
+  "image_id": "i0002",
+  "metadata": {
+    "image_id": "i0002",
+    "original_path": "ads/images/i0002.png",
+    "original_size": [
+      430,
+      645
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 197559,
+    "format": "PNG",
+    "processing_time_ms": 9371.107816696167
+  },
+  "files": {
+    "standardized_png": "i0002_standardized.png",
+    "detections_png": "i0002_detections.png",
+    "attention_overlay_png": "i0002_attention_overlay.png",
+    "attention_heatmap_npz": "i0002_attention_heatmap.npz",
+    "ocr_txt": "i0002_ocr.txt",
+    "visual_semantics_json": "i0002_visual_semantics.json",
+    "attention_map_json": "i0002_attention_map.json",
+    "llm_description_json": "i0002_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 0,
+    "scene_top": [
+      {
+        "label": "text-heavy ad",
+        "score": 0.1673935502767563
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "coupon",
+          "score": 0.06403475254774094
+        },
+        {
+          "label": "discount badge",
+          "score": 0.06220665201544762
+        },
+        {
+          "label": "tray",
+          "score": 0.05056002363562584
+        }
+      ]
+    },
+    "ocr_snippet": "crunchgainesville Spenaored Month's Ou Total $143, $1 544x, 54422 crunchgainesville SQUATober starts now! @& $1 to join + ALL October FREE with Code SQUAT. Join",
+    "attention_entropy": 9.622652875194543
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "image_id": "i0001",
+  "metadata": {
+    "image_id": "i0001",
+    "original_path": "ads/images/i0001.png",
+    "original_size": [
+      430,
+      732
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 414762,
+    "format": "PNG",
+    "processing_time_ms": 5609.044790267944
+  },
+  "files": {
+    "standardized_png": "i0001_standardized.png",
+    "detections_png": "i0001_detections.png",
+    "attention_overlay_png": "i0001_attention_overlay.png",
+    "attention_heatmap_npz": "i0001_attention_heatmap.npz",
+    "ocr_txt": "i0001_ocr.txt",
+    "visual_semantics_json": "i0001_visual_semantics.json",
+    "attention_map_json": "i0001_attention_map.json",
+    "llm_description_json": "i0001_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 4,
+    "scene_top": [
+      {
+        "label": "text-heavy ad",
+        "score": 0.2689470052719116
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "coupon",
+          "score": 0.06858137249946594
+        },
+        {
+          "label": "pretzel",
+          "score": 0.04652221500873566
+        },
+        {
+          "label": "tray",
+          "score": 0.044947102665901184
+        }
+      ]
+    },
+    "ocr_snippet": "th FREE t @Crunch : EXP TOMORROW! \u00a7 GET 1 MONTH FREE! MEMBERSHIPS STARTING AT \u00a79.99/M0 * JOIN AT CRUNCH.COM 1\u00a2 Down + 1 Month FREE Sign up",
+    "attention_entropy": 9.290499096321174
+  }
+}

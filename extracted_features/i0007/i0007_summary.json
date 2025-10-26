@@ -1,0 +1,56 @@
+{
+  "image_id": "i0007",
+  "metadata": {
+    "image_id": "i0007",
+    "original_path": "ads/images/i0007.png",
+    "original_size": [
+      430,
+      436
+    ],
+    "standardized_size": [
+      1024,
+      1024
+    ],
+    "file_size_bytes": 52972,
+    "format": "PNG",
+    "processing_time_ms": 4666.321039199829
+  },
+  "files": {
+    "standardized_png": "i0007_standardized.png",
+    "detections_png": "i0007_detections.png",
+    "attention_overlay_png": "i0007_attention_overlay.png",
+    "attention_heatmap_npz": "i0007_attention_heatmap.npz",
+    "ocr_txt": "i0007_ocr.txt",
+    "visual_semantics_json": "i0007_visual_semantics.json",
+    "attention_map_json": "i0007_attention_map.json",
+    "llm_description_json": "i0007_llm_description.json"
+  },
+  "quicklook": {
+    "num_detections": 3,
+    "scene_top": [
+      {
+        "label": "text-heavy ad",
+        "score": 0.1969505250453949
+      }
+    ],
+    "product_category": {
+      "from": "clip_image",
+      "labels": [
+        {
+          "label": "pretzel",
+          "score": 0.056739650666713715
+        },
+        {
+          "label": "price tag",
+          "score": 0.05662747099995613
+        },
+        {
+          "label": "coupon",
+          "score": 0.04957971349358559
+        }
+      ]
+    },
+    "ocr_snippet": "6) xeroshoes Sponsored Shop Now xeroshoes Designed for people who never stop moving. Xero Shoes blend natural flexibility with soft, lightweight comfort. wv\u00bb le",
+    "attention_entropy": 9.069305252874596
+  }
+}
