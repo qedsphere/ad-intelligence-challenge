@@ -5,7 +5,8 @@ Image Batch Extraction Runner (Parallel, Deadline-Aware)
 - As soon as an image is standardized, it flows to extraction (pipeline)
 - Saves interpretable artifacts per image + project index CSV
 
-CLI:
+CLI (note to fill out the first line. Including the last line remakes everything in the dataset, which may be unnecessary.):
+    PYTHONPATH="PATH/TO/adintelligence/tppgaze:$PYTHONPATH" \
     python -m image.extraction \
         --images_dir ads/images \
         --out_dir extracted_features \
@@ -14,12 +15,14 @@ CLI:
         --ext_workers auto \
         --deadline_seconds 300 \
         --per_image_timeout 120 \
-        [--force]
+        --force
 """
 
 from __future__ import annotations
 
 import os
+import matplotlib
+matplotlib.use("Agg", force=True)
 import csv
 import json
 import time
@@ -32,6 +35,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed, Future
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+from tppgaze.utils import draw_scanpath
+
 
 # ====== project extractors (must exist in image/) ======
 from image import visual_semantics as VS
@@ -67,7 +74,7 @@ def _json_default(o):
     return str(o)
 
 
-def load_and_standardize(path: Path, target_size=(1024, 1024), keep_aspect=True) -> Tuple[Image.Image, np.ndarray]:
+def load_and_standardize(path: Path, target_size=(1024, 1024), keep_aspect=True) -> Tuple[Any, np.ndarray]:
     img = Image.open(path).convert("RGB")
     if keep_aspect:
         tw, th = target_size
@@ -86,7 +93,7 @@ def load_and_standardize(path: Path, target_size=(1024, 1024), keep_aspect=True)
     return std_pil, arr
 
 
-def draw_detections(pil_img: Image.Image, dets: List[Dict[str, Any]]) -> Image.Image:
+def draw_detections(pil_img: Any, dets: List[Dict[str, Any]]) -> Any:
     out = pil_img.copy()
     draw = ImageDraw.Draw(out)
     try:
@@ -102,8 +109,7 @@ def draw_detections(pil_img: Image.Image, dets: List[Dict[str, Any]]) -> Image.I
     return out
 
 
-def overlay_heatmap(pil_img: Image.Image, heatmap01: np.ndarray, alpha: float = 0.45) -> Image.Image:
-    import matplotlib.cm as cm
+def overlay_heatmap(pil_img: Any, heatmap01: np.ndarray, alpha: float = 0.45) -> Any:
     base = np.array(pil_img).astype(np.float32) / 255.0
     hm_rgb = cm.get_cmap("jet")(np.clip(heatmap01, 0, 1))[:, :, :3]
     mix = (1.0 - alpha) * base + alpha * hm_rgb
@@ -183,7 +189,7 @@ class Runner:
 
         image_id = payload["image_id"]
         img_dir: Path = payload["img_dir"]
-        std_pil: Image.Image = payload["std_pil"]
+        std_pil: Any = payload["std_pil"]
         std_arr: np.ndarray = payload["std_arr"]
         meta: Meta = payload["meta"]
 
@@ -198,16 +204,48 @@ class Runner:
             with open(img_dir / f"{image_id}_ocr.txt", "w") as f:
                 f.write((ocr.get("full_text") or "").strip())
 
-            # attention_map
-            am_out = AM.extract(std_arr, image_id)
-            np.savez_compressed(img_dir / f"{image_id}_attention_heatmap.npz", heatmap=am_out.get("heatmap"))
-            hm = am_out.get("heatmap")
-            if isinstance(hm, np.ndarray) and hm.ndim == 2:
-                mmin, mmax = float(hm.min()), float(hm.max())
-                hm01 = (hm - mmin) / (mmax - mmin + 1e-8) if mmax > mmin else np.zeros_like(hm)
-                overlay_heatmap(std_pil, hm01, 0.45).save(img_dir / f"{image_id}_attention_overlay.png")
+            # attention_map -> draw scanpath graphic (no heatmap)
+            from PIL import Image, ImageOps
+            orig_pil = ImageOps.exif_transpose(Image.open(meta.original_path)).convert("RGB")
+            orig_arr = np.asarray(orig_pil).astype(np.float32) / 255.0
+            am_out = AM.extract(orig_arr, image_id)
             with open(img_dir / f"{image_id}_attention_map.json", "w") as f:
                 json.dump(am_out, f, indent=2, default=_json_default)
+
+            # Render a sequenced set of fixation points similar to tppgaze demo
+            try:
+                import matplotlib
+                matplotlib.use("Agg", force=True)
+                import matplotlib.pyplot as plt
+                from tppgaze.utils import draw_scanpath
+                scanpaths = am_out.get("scanpaths") or []
+                if scanpaths:
+                    sp = scanpaths[0].get("fixations") if isinstance(scanpaths[0], dict) else scanpaths[0]
+                    if isinstance(sp, np.ndarray) and sp.ndim == 2 and sp.shape[1] >= 3:
+                        # Figure size proportional to original image aspect ratio for clean output
+                        H0, W0 = orig_arr.shape[0], orig_arr.shape[1]
+                        base = 6.0
+                        fig_w = base * (W0 / max(W0, H0))
+                        fig_h = base * (H0 / max(W0, H0))
+                        fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+                        ax.imshow(orig_pil, interpolation="none")
+                        ax.axis("off")
+                        x, y, d = sp[:, 0].astype(float), sp[:, 1].astype(float), sp[:, 2].astype(float)
+                        # Clip to image bounds
+                        x = np.clip(x, 0.0, float(W0 - 1))
+                        y = np.clip(y, 0.0, float(H0 - 1))
+                        # Convert to milliseconds if values look like seconds, then clamp to visible range
+                        d = (d * 1000.0) if (np.nanmedian(d) <= 10.0) else d
+                        d = np.clip(d, 120.0, 1200.0)
+                        ax.set_xlim(0, W0 - 1)
+                        ax.set_ylim(H0 - 1, 0)  # image coordinates (origin top-left)
+                        draw_scanpath(ax, x, y, d)
+                        fig.tight_layout(pad=0)
+                        fig.savefig(img_dir / f"{image_id}_attention_scanpath.png", dpi=150, bbox_inches="tight", pad_inches=0)
+                        plt.close(fig)
+            except Exception:
+                # Fail quietly; JSON still saved
+                pass
 
             # llm_description (optional)
             llm_out: Dict[str, Any] = {}
@@ -231,8 +269,7 @@ class Runner:
             files = {
                 "standardized_png": f"{image_id}_standardized.png",
                 "detections_png": f"{image_id}_detections.png",
-                "attention_overlay_png": f"{image_id}_attention_overlay.png",
-                "attention_heatmap_npz": f"{image_id}_attention_heatmap.npz",
+                "attention_scanpath_png": f"{image_id}_attention_scanpath.png",
                 "ocr_txt": f"{image_id}_ocr.txt",
                 "visual_semantics_json": f"{image_id}_visual_semantics.json",
                 "attention_map_json": f"{image_id}_attention_map.json",
