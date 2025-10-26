@@ -2,7 +2,7 @@
   "image_id": "i0002",
   "metadata": {
     "image_id": "i0002",
-    "original_path": "ads/images/i0002.png",
+    "original_path": "/var/folders/l1/z6_3f67122z6yj9pschpwyy80000gn/T/adj_imgs_xzxnbhse/i0002.png",
     "original_size": [
       430,
       645
@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 197559,
     "format": "PNG",
-    "processing_time_ms": 8907.849073410034
+    "processing_time_ms": 9414.710760116577
   },
   "files": {
     "standardized_png": "i0002_standardized.png",

@@ -1,7 +1,0 @@
-=== Summary for i0008 ===
-Detections: 1
-Scene: text-heavy ad (0.21)
-Product category: price tag [from clip_image]
-OCR snippet: Xero Shoes x $ e Save 10% sitewide on foot-shaped comfort—zero-drop, flexible footwear for natural movement. XERGSHOES 1...
-Attention entropy: 9.21
-Processing time: 4.49s

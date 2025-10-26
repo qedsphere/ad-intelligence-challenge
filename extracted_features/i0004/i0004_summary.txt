@@ -3,5 +3,5 @@ Detections: 2
 Scene: text-heavy ad (0.29)
 Product category: coupon [from clip_image]
 OCR snippet: GLE 45 3 due at signing” the 2026 GLE 450 AMATIC Coupe Optional equipment shown. The 2026 GLE 450 4MATIC Learn more Coup...
-Attention entropy: 9.43
-Processing time: 5.07s
+Attention entropy: 9.49
+Processing time: 5.73s

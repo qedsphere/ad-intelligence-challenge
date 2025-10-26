@@ -2,7 +2,7 @@
   "image_id": "i0005",
   "metadata": {
     "image_id": "i0005",
-    "original_path": "ads/images/i0005.png",
+    "original_path": "/var/folders/l1/z6_3f67122z6yj9pschpwyy80000gn/T/adj_imgs_xzxnbhse/i0005.png",
     "original_size": [
       430,
       625
@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 403281,
     "format": "PNG",
-    "processing_time_ms": 4316.766023635864
+    "processing_time_ms": 3657.4249267578125
   },
   "files": {
     "standardized_png": "i0005_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": ". : e Einstein Bros. Bagels x : Try the NEW Oktoberfest Egg Sandwich \u2014 Pretzel Bagel \u00a7Q with Bacon, Ham, Swiss & Beer Cheese Shmear @ It won't last long! Order ",
-    "attention_entropy": 8.586159382109884
+    "attention_entropy": 8.747556712610598
   }
 }

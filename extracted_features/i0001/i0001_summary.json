@@ -2,7 +2,7 @@
   "image_id": "i0001",
   "metadata": {
     "image_id": "i0001",
-    "original_path": "ads/images/i0001.png",
+    "original_path": "/var/folders/l1/z6_3f67122z6yj9pschpwyy80000gn/T/adj_imgs_xzxnbhse/i0001.png",
     "original_size": [
       430,
       732
@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 414762,
     "format": "PNG",
-    "processing_time_ms": 4236.371994018555
+    "processing_time_ms": 5372.004985809326
   },
   "files": {
     "standardized_png": "i0001_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "th FREE t @Crunch : EXP TOMORROW! \u00a7 GET 1 MONTH FREE! MEMBERSHIPS STARTING AT \u00a79.99/M0 * JOIN AT CRUNCH.COM 1\u00a2 Down + 1 Month FREE Sign up",
-    "attention_entropy": 8.783320317807158
+    "attention_entropy": 9.427613867897795
   }
 }

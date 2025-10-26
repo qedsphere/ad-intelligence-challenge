@@ -1,42 +1,136 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap");
+
+body {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  background-color: #121212;
+  color: #edf4fe;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding-top: 60px;
+}
+
+.app-container {
+  width: 600px;
+  background: #1c1c1c;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+h1 {
+  color: #7dd8fb;
+  margin-bottom: 30px;
+  font-weight: 600;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.upload-box {
+  border: 2px dashed #06b6d4;
+  border-radius: 12px;
+  padding: 40px 20px;
+  background-color: #121212;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.file-input {
+  display: block;
+  cursor: pointer;
+  color: #adadad;
+  transition: all 0.2s;
 }
 
-.card {
-  padding: 2em;
+.file-input:hover {
+  color: #7dd8fb;
 }
 
-.read-the-docs {
-  color: #888;
+.file-input input {
+  display: none;
+}
+
+.file-list {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.file-list h3 {
+  color: #7dd8fb;
+  margin-bottom: 10px;
+}
+
+.file-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.file-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid #2b2b2b;
+  color: #edf4fe;
+}
+
+button {
+  margin-top: 25px;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  background-color: #06b6d4;
+  color: #121212;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background-color: #7dd8fb;
+}
+
+button:disabled {
+  background-color: #3a3a3a;
+  cursor: not-allowed;
+}
+
+.download-link {
+  display: inline-block;
+  margin-top: 25px;
+  color: #06b6d4;
+  text-decoration: none;
+  font-weight: 600;
+  border: 2px solid #06b6d4;
+  border-radius: 8px;
+  padding: 10px 20px;
+  transition: all 0.2s;
+}
+
+.download-link:hover {
+  background-color: #06b6d4;
+  color: #121212;
+}
+.summary-container {
+  margin-top: 40px;
+  text-align: left;
+}
+
+.summary-box {
+  background: #1c1c1c;
+  border: 1px solid #06b6d4;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-box h3 {
+  color: #7dd8fb;
+  margin-bottom: 10px;
+}
+
+.summary-box pre {
+  color: #edf4fe;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }

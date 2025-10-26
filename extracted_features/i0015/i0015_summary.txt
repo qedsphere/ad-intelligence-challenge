@@ -1,7 +1,0 @@
-=== Summary for i0015 ===
-Detections: 4
-Scene: text-heavy ad (0.20)
-Product category: coupon [from clip_image]
-OCR snippet: Paleovalley x Huge Sale Alert! This is your chance to stock up and save big on the cleanest bone broth protein out there...
-Attention entropy: 9.38
-Processing time: 6.06s

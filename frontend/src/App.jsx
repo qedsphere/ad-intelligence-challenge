@@ -1,57 +1,90 @@
 import { useState } from "react";
 import axios from "axios";
+import "./App.css";
 
 export default function App() {
   const [files, setFiles] = useState([]);
-  const [downloading, setDownloading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState(null);
+  const [summaries, setSummaries] = useState([]);
 
-  const handleUpload = (e) => setFiles(Array.from(e.target.files));
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+  };
 
-  const handleSubmit = async () => {
-    if (!files.length) return;
-    setDownloading(true);
-    setDownloadUrl(null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!files.length) return alert("Please upload at least one file.");
 
     const formData = new FormData();
-    files.forEach((f) => formData.append("files", f));
+    files.forEach((file) => formData.append("files", file));
+
+    setIsLoading(true);
+    setDownloadUrl(null);
+    setSummaries([]);
 
     try {
-      const res = await axios.post("http://localhost:8000/extract", formData, {
+      const response = await axios.post("http://localhost:8000/extract", formData, {
         responseType: "blob",
-        onUploadProgress: (p) =>
-          console.log(`Upload ${Math.round((p.loaded / p.total) * 100)}%`),
       });
 
-      const blob = new Blob([res.data], { type: "application/zip" });
+      const blob = new Blob([response.data]);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+
+      // fetch summaries after extraction
+      const summariesRes = await axios.get("http://localhost:8000/summaries");
+      setSummaries(summariesRes.data.summaries);
     } catch (err) {
-      alert("Extraction failed: " + err);
+      console.error(err);
+      alert("Error during extraction.");
     } finally {
-      setDownloading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: 40, fontFamily: "sans-serif" }}>
-      <h1>🧠 Ad Feature Extractor</h1>
-      <input
-        type="file"
-        accept="image/png, image/jpeg"
-        multiple
-        onChange={handleUpload}
-        style={{ marginBottom: 20 }}
-      />
-      <br />
-      <button onClick={handleSubmit} disabled={downloading}>
-        {downloading ? "Extracting..." : "Run Extraction"}
-      </button>
+    <div className="app-container">
+      <h1>Ad Intelligence Feature Extractor</h1>
+
+      <form className="upload-box" onSubmit={handleSubmit}>
+        <label className="file-input">
+          <input type="file" multiple onChange={handleFileChange} />
+          <p>Drag and drop or click to select image files</p>
+        </label>
+
+        {files.length > 0 && (
+          <div className="file-list">
+            <h3>Selected Files</h3>
+            <ul>
+              {files.map((file, idx) => (
+                <li key={idx}>{file.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? "Extracting..." : "Run Extraction"}
+        </button>
+      </form>
+
       {downloadUrl && (
-        <div style={{ marginTop: 20 }}>
-          <a href={downloadUrl} download="extracted_features.zip">
-            ⬇️ Download Extracted Features
-          </a>
+        <a className="download-link" href={downloadUrl} download="extracted_features.zip">
+          Download Extracted Features
+        </a>
+      )}
+
+      {summaries.length > 0 && (
+        <div className="summary-container">
+          <h2>Extraction Summaries</h2>
+          {summaries.map((item, idx) => (
+            <div key={idx} className="summary-box">
+              <h3>{item.file}</h3>
+              <pre>{item.summary}</pre>
+            </div>
+          ))}
         </div>
       )}
     </div>

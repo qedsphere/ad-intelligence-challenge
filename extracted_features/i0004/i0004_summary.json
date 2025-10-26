@@ -2,7 +2,7 @@
   "image_id": "i0004",
   "metadata": {
     "image_id": "i0004",
-    "original_path": "ads/images/i0004.png",
+    "original_path": "/var/folders/l1/z6_3f67122z6yj9pschpwyy80000gn/T/adj_imgs_xzxnbhse/i0004.png",
     "original_size": [
       430,
       618
@@ -13,7 +13,7 @@
     ],
     "file_size_bytes": 241063,
     "format": "PNG",
-    "processing_time_ms": 5071.345806121826
+    "processing_time_ms": 5732.317924499512
   },
   "files": {
     "standardized_png": "i0004_standardized.png",
@@ -51,6 +51,6 @@
       ]
     },
     "ocr_snippet": "GLE 45 3 due at signing\u201d the 2026 GLE 450 AMATIC Coupe Optional equipment shown. The 2026 GLE 450 4MATIC Learn more Coupe",
-    "attention_entropy": 9.42660208855336
+    "attention_entropy": 9.49338201661128
   }
 }
