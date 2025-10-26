@@ -1,15 +1,16 @@
 """
-Visual Semantics Feature Extraction (YOLO for boxes, CLIP zero-shot for labels)
+Visual Semantics Feature Extraction (YOLO boxes, CLIP embeddings, FAISS text index optional)
 
-Returns:
-- detections: YOLO proposals (bbox, conf, class_id, class_name) for overlays/spatial
-- global_embedding: CLIP embedding for the full image
+Outputs:
+- detections: YOLO proposals (bbox, conf, class_id, class_name)
+- global_embedding: CLIP embedding of whole image
 - scene_labels: CLIP zero-shot labels for whole image
-- spatial: simple relations (left_of/right_of/above/below/overlaps)
-- product_category: robust category via CLIP zero-shot
-  - from: "clip_crop" (per-crop) when confident, else "clip_image" (whole image)
+- spatial: left_of/right_of/above/below/overlaps among boxes
+- product_category: robust category via either:
+    * FAISS text index retrieval (open vocabulary, from="faiss_crop"/"faiss_image"), or
+    * scene-aware CLIP zero-shot label bank (from="clip_crop"/"clip_image") as fallback.
 
-All heavy deps are optional; function degrades gracefully.
+All deps are lazy/optional; function degrades gracefully.
 """
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 from contextlib import nullcontext
+import json
+import os
 
 import numpy as np
 
@@ -27,6 +30,7 @@ logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 _YOLO_AVAILABLE = False
 _CLIP_AVAILABLE = False
+_FAISS_AVAILABLE = False
 
 _yolo_model = None
 _clip_model = None
@@ -34,19 +38,28 @@ _clip_preprocess = None
 _clip_tokenizer = None
 _torch = None
 
+# FAISS index cache
+_faiss_index = None
+_faiss_labels: Optional[List[str]] = None
+
 # Small & fast defaults
 _YOLO_WEIGHTS = "yolov8n.pt"
 _CLIP_MODEL = "ViT-B-32"
 _CLIP_PRETRAINED = "openai"
 
-# Scene labels
+# Temperature & gating (you can tune)
+_TEMPERATURE = 0.07
+_TOP1_MIN = 0.10
+_MARGIN_MIN = 0.03
+
+# Scene labels (tiny)
 _SCENE_LABELS = [
     "food photography", "breakfast scene", "kitchen counter",
     "outdoor picnic", "restaurant table", "abstract background",
     "studio product shot", "lifestyle photo", "text-heavy ad"
 ]
 
-# Product label banks (scene-aware selection uses these)
+# Scene-aware product mini-banks (fallback when FAISS unavailable)
 _FOOD_LABELS = [
     "bagel", "donut", "pretzel", "sandwich", "burger", "fries", "salad",
     "soup", "pizza", "cake", "coffee", "tea", "juice", "soda",
@@ -55,10 +68,11 @@ _FOOD_LABELS = [
 _ELECTRONICS_LABELS = ["phone", "laptop", "watch", "headphones", "game controller"]
 _META_LABELS = ["brand logo", "price tag", "discount badge", "coupon", "app icon", "QR code"]
 
-# Gating/softmax temperature for CLIP zero-shot
-_TEMPERATURE = 0.07
-_TOP1_MIN = 0.10
-_MARGIN_MIN = 0.03
+# FAISS config (set USE_FAISS=True to try index if present)
+_USE_FAISS = True
+_FAISS_INDEX_PATH = "text_labels.index"
+_FAISS_LABELS_PATH = "text_labels.json"
+_FAISS_TOPK = 50  # candidates retrieved per image/crop
 
 # -----------------------------------------------------------------------------
 # Dependency probing
@@ -76,6 +90,12 @@ try:
     _CLIP_AVAILABLE = True
 except Exception as e:
     logger.debug("open_clip/torch not available: %s", e)
+
+try:
+    import faiss  # type: ignore
+    _FAISS_AVAILABLE = True
+except Exception as e:
+    logger.debug("faiss not available: %s", e)
 
 
 def _device():
@@ -128,6 +148,28 @@ def _init_clip():
             _clip_tokenizer = None
     return _clip_model, _clip_preprocess, _clip_tokenizer, _device(), _torch
 
+# ---------------- FAISS index helpers ----------------
+def _faiss_ready() -> bool:
+    return (
+        _USE_FAISS and _FAISS_AVAILABLE and
+        os.path.exists(_FAISS_INDEX_PATH) and os.path.exists(_FAISS_LABELS_PATH)
+    )
+
+def _load_faiss_index():
+    global _faiss_index, _faiss_labels
+    if not _faiss_ready():
+        return None, None
+    if _faiss_index is None or _faiss_labels is None:
+        try:
+            _faiss_index = faiss.read_index(_FAISS_INDEX_PATH)
+            with open(_FAISS_LABELS_PATH, "r") as f:
+                _faiss_labels = json.load(f)
+            logger.info("Loaded FAISS text index with %d labels", len(_faiss_labels or []))
+        except Exception as e:
+            logger.warning("Failed to load FAISS index/labels: %s", e)
+            _faiss_index, _faiss_labels = None, None
+    return _faiss_index, _faiss_labels
+
 # -----------------------------------------------------------------------------
 # Utilities
 # -----------------------------------------------------------------------------
@@ -176,7 +218,8 @@ def _zero_shot_image_labels(clip_model, preprocess, tokenizer, device, torch_mod
     order = np.argsort(-probs_np)
     return [{"label": labels[i], "score": float(probs_np[i])} for i in order[:5]]
 
-def _classify_crop(clip_model, preprocess, tokenizer, device, torch_mod, crop_img, text_feats, labels: List[str]) -> Tuple[List[Dict[str, Any]], float, float]:
+def _classify_crop_zs(clip_model, preprocess, device, torch_mod, crop_img, text_feats, labels: List[str]) -> Tuple[List[Dict[str, Any]], float, float]:
+    """Zero-shot classify a crop against a provided label bank (text_feats)."""
     cm = torch_mod.no_grad() if (torch_mod is not None and hasattr(torch_mod, "no_grad")) else nullcontext()
     t = preprocess(crop_img).unsqueeze(0)
     if device is not None:
@@ -191,6 +234,39 @@ def _classify_crop(clip_model, preprocess, tokenizer, device, torch_mod, crop_im
     p1 = float(probs_np[order[0]]) if probs_np.size else 0.0
     p2 = float(probs_np[order[1]]) if probs_np.size > 1 else 0.0
     return topk, p1, p2
+
+def _clip_image_feature(clip_model, preprocess, device, torch_mod, pil_img):
+    """Returns L2-normalized CLIP image feature tensor."""
+    cm = torch_mod.no_grad() if (torch_mod is not None and hasattr(torch_mod, "no_grad")) else nullcontext()
+    t = preprocess(pil_img).unsqueeze(0)
+    if device is not None:
+        t = t.to(device)
+    with cm:
+        f = _normalize_feats(clip_model.encode_image(t))
+    return f  # torch tensor [1, D], normalized
+
+def _faiss_candidates_from_imgfeat(img_feat, topk: int) -> List[Dict[str, Any]]:
+    """Query FAISS with a normalized image feature (torch or np); returns [{label, score}] with softmax over sims/T."""
+    index, labels = _load_faiss_index()
+    if index is None or labels is None:
+        return []
+    # ensure numpy float32 row vector
+    if hasattr(img_feat, "detach"):
+        v = img_feat.detach().cpu().numpy().astype("float32")
+    else:
+        v = np.array(img_feat, dtype="float32")
+    if v.ndim == 1:
+        v = v[None, :]
+    sims, ids = index.search(v, topk)  # inner product on normalized vectors ~ cosine
+    sims = sims[0]
+    ids = ids[0]
+    # temperature softmax on sims
+    sims_adj = sims / _TEMPERATURE
+    exps = np.exp(sims_adj - np.max(sims_adj))
+    probs = exps / (exps.sum() + 1e-8)
+    order = np.argsort(-probs)
+    out = [{"label": labels[int(ids[i])], "score": float(probs[i])} for i in order]
+    return out
 
 def _basic_spatial_relations(dets: List[Dict[str, Any]]) -> Dict[str, Any]:
     rels = []
@@ -271,13 +347,12 @@ def extract(image: np.ndarray, image_id: str) -> Dict[str, Any]:
         clip_model, preprocess, tokenizer, device, torch_mod = _init_clip()
         if clip_model is not None and preprocess is not None:
             # Global embedding
-            img_tensor = preprocess(pil_img).unsqueeze(0)
-            if device is not None:
-                img_tensor = img_tensor.to(device)
-            cm = torch_mod.no_grad() if (torch_mod is not None and hasattr(torch_mod, "no_grad")) else nullcontext()
-            with cm:
-                g_emb = clip_model.encode_image(img_tensor)
-            results["global_embedding"] = _tensor_to_list(g_emb)
+            try:
+                g_feat = _clip_image_feature(clip_model, preprocess, device, torch_mod, pil_img)
+                results["global_embedding"] = _tensor_to_list(g_feat)
+            except Exception as e:
+                results["errors"].append({"clip_global_embed_error": str(e)})
+                g_feat = None
 
             # Scene labels
             try:
@@ -287,23 +362,32 @@ def extract(image: np.ndarray, image_id: str) -> Dict[str, Any]:
             except Exception as e:
                 results["errors"].append({"clip_scene_error": str(e)})
 
-            # Prepare product text features with scene-aware label bank
-            best_crop = None
-            try:
-                label_bank = _select_label_bank(results.get("scene_labels", []))
-                prompts = [f"a product photo of a {lbl}" for lbl in label_bank]
-                tokens = tokenizer(prompts)
-                if device is not None:
-                    tokens = tokens.to(device)
-                with cm:
-                    text_feats = _normalize_feats(clip_model.encode_text(tokens))
-            except Exception as e:
-                text_feats = None
-                label_bank = []
-                results["errors"].append({"clip_textfeat_error": str(e)})
+            # Try FAISS index (open vocabulary); lazy-load once
+            index_ok = False
+            if _USE_FAISS:
+                idx, lbls = _load_faiss_index()
+                index_ok = (idx is not None and lbls is not None)
 
-            # Per-detection embeddings + per-crop zero-shot classification
-            if results["detections"] and text_feats is not None and label_bank:
+            best_crop = None
+
+            # Per-detection embeddings + classification
+            if results["detections"]:
+                # If not using FAISS, prepare scene-aware bank text features once
+                text_feats = None
+                label_bank: List[str] = []
+                if not index_ok and tokenizer is not None:
+                    try:
+                        label_bank = _select_label_bank(results.get("scene_labels", []))
+                        tokens = tokenizer([f"a product photo of a {lbl}" for lbl in label_bank])
+                        if device is not None:
+                            tokens = tokens.to(device)
+                        cm = torch_mod.no_grad() if (torch_mod is not None and hasattr(torch_mod, "no_grad")) else nullcontext()
+                        with cm:
+                            text_feats = _normalize_feats(clip_model.encode_text(tokens))
+                    except Exception as e:
+                        results["errors"].append({"clip_textfeat_error": str(e)})
+                        text_feats = None
+
                 for det in results["detections"]:
                     x1, y1, x2, y2 = [int(round(v)) for v in det["bbox"]]
                     x1, y1 = max(0, x1), max(0, y1)
@@ -318,43 +402,64 @@ def extract(image: np.ndarray, image_id: str) -> Dict[str, Any]:
 
                     # per-crop embedding
                     try:
+                        cm = torch_mod.no_grad() if (torch_mod is not None and hasattr(torch_mod, "no_grad")) else nullcontext()
                         t = preprocess(crop).unsqueeze(0)
                         if device is not None:
                             t = t.to(device)
                         with cm:
                             c_emb = clip_model.encode_image(t)
-                        det["embedding"] = _tensor_to_list(c_emb)
+                            c_feat = _normalize_feats(c_emb)
+                        det["embedding"] = _tensor_to_list(c_feat)
                     except Exception as e:
                         det["embedding"] = None
+                        c_feat = None
                         results["errors"].append({"clip_crop_embed_error": str(e)})
 
-                    # per-crop zero-shot labels
+                    # per-crop classification (FAISS first; fallback to mini-bank)
                     try:
-                        topk, p1, p2 = _classify_crop(
-                            clip_model, preprocess, tokenizer, device, torch_mod, crop, text_feats, label_bank
-                        )
-                        det["top_labels"] = topk
-                        margin = p1 - p2
-                        candidate = {"topk": topk, "margin": margin, "p1": p1}
-                        if (best_crop is None) or (margin > best_crop["margin"]):
-                            best_crop = candidate
+                        if index_ok and c_feat is not None:
+                            # Query FAISS with crop feature
+                            cands = _faiss_candidates_from_imgfeat(c_feat, _FAISS_TOPK)
+                            det["top_labels"] = cands[:3]
+                            # decide by p1/margin
+                            if cands:
+                                p1 = cands[0]["score"]
+                                p2 = cands[1]["score"] if len(cands) > 1 else 0.0
+                                margin = p1 - p2
+                                cand = {"topk": cands[:3], "p1": p1, "margin": margin}
+                                if (best_crop is None) or (margin > best_crop["margin"]):
+                                    best_crop = cand
+                        elif text_feats is not None:
+                            topk, p1, p2 = _classify_crop_zs(
+                                clip_model, preprocess, device, torch_mod, crop, text_feats, label_bank
+                            )
+                            det["top_labels"] = topk
+                            margin = p1 - p2
+                            cand = {"topk": topk, "p1": p1, "margin": margin}
+                            if (best_crop is None) or (margin > best_crop["margin"]):
+                                best_crop = cand
+                        else:
+                            det["top_labels"] = []
                     except Exception as e:
                         det["top_labels"] = []
-                        results["errors"].append({"clip_crop_class_error": str(e)})
+                        results["errors"].append({"crop_class_error": str(e)})
 
-            # Product category resolution (gated; fallback to whole image)
-            if best_crop is not None and (best_crop["p1"] >= _TOP1_MIN and best_crop["margin"] >= _MARGIN_MIN):
-                results["product_category"] = {"from": "clip_crop", "labels": best_crop["topk"]}
-            else:
-                try:
-                    # if label_bank failed above, use a default comprehensive bank
-                    lb = label_bank if label_bank else (_FOOD_LABELS + _ELECTRONICS_LABELS + _META_LABELS)
-                    zs = _zero_shot_image_labels(
-                        clip_model, preprocess, tokenizer, device, torch_mod, pil_img, lb
-                    )
-                    results["product_category"] = {"from": "clip_image", "labels": zs[:3]}
-                except Exception as e:
-                    results["errors"].append({"clip_product_error": str(e)})
+            # Product category resolution
+            try:
+                if best_crop is not None and (best_crop["p1"] >= _TOP1_MIN and best_crop["margin"] >= _MARGIN_MIN):
+                    src = "faiss_crop" if _faiss_index is not None else "clip_crop"
+                    results["product_category"] = {"from": src, "labels": best_crop["topk"]}
+                else:
+                    # fallback to whole image
+                    if index_ok and g_feat is not None:
+                        cands = _faiss_candidates_from_imgfeat(g_feat, _FAISS_TOPK)
+                        results["product_category"] = {"from": "faiss_image", "labels": cands[:3]}
+                    else:
+                        lb = _select_label_bank(results.get("scene_labels", []))
+                        zs = _zero_shot_image_labels(clip_model, preprocess, _clip_tokenizer, device, _torch, pil_img, lb)
+                        results["product_category"] = {"from": "clip_image", "labels": zs[:3]}
+            except Exception as e:
+                results["errors"].append({"product_resolution_error": str(e)})
     except Exception as e:
         logger.debug("CLIP pipeline failed: %s", e)
         results["errors"].append({"clip_error": str(e)})

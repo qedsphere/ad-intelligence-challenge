@@ -3,20 +3,34 @@ numpy>=1.24.0
 Pillow>=10.0.0
 opencv-python>=4.8.0
 
-# Visualization for the demo (saliency overlay, palette strip)
+# Visualization for the demo (palette/saliency overlays)
 matplotlib>=3.7.0
 
 # Testing
 pytest>=8.0.0
 
-# YOLOv8 object detection
+# YOLOv8 object detection (boxes only)
 ultralytics>=8.0.0
 
 # CLIP embeddings (open_clip)
 open-clip-torch>=2.24.0
 
-# PyTorch (needed for CLIP and to accelerate on CUDA/MPS if available)
+# PyTorch (needed for CLIP; enables CUDA or Apple Silicon MPS if available)
+# Tip (Apple Silicon): these wheels include MPS support. Verify with:
+#   python -c "import torch; print(hasattr(torch.backends,'mps') and torch.backends.mps.is_available())"
 torch>=2.2.0
 torchvision>=0.17.0
-# torchaudio is optional; include if you later add audio features
+# torchaudio is optional if you later add audio features
 # torchaudio>=2.2.0
+
+# Optional: FAISS for open-vocabulary text label retrieval
+# NOTE: On macOS arm64 (Apple Silicon), pip wheels for faiss-cpu may be unavailable.
+# If install fails on M-series Macs, install via conda-forge:
+#   conda install -c conda-forge faiss-cpu
+# or comment this line out; the code will gracefully fall back to the mini label bank.
+faiss-cpu>=1.7.4
+# If you want to be cautious on macOS arm64, you can instead use:
+# faiss-cpu>=1.7.4; platform_system!="Darwin" or platform_machine=="x86_64"
+
+# Optional (handy for building a large text index offline)
+tqdm>=4.66.0
