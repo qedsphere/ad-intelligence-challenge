@@ -1,17 +1,17 @@
-"""
-Visual Semantics Feature Extraction (YOLO boxes, CLIP embeddings, FAISS text index optional)
-
-Outputs:
-- detections: YOLO proposals (bbox, conf, class_id, class_name)
-- global_embedding: CLIP embedding of whole image
-- scene_labels: CLIP zero-shot labels for whole image
-- spatial: left_of/right_of/above/below/overlaps among boxes
-- product_category: robust category via either:
-    * FAISS text index retrieval (open vocabulary, from="faiss_crop"/"faiss_image"), or
-    * scene-aware CLIP zero-shot label bank (from="clip_crop"/"clip_image") as fallback.
-
-All deps are lazy/optional; function degrades gracefully.
-"""
+# visual_semantics.py
+# -----------------------------------------------------------------------------
+# Visual Semantics Feature Extraction (YOLO boxes, CLIP embeddings, FAISS text index optional, OCR optional)
+#
+# Outputs:
+# - detections: YOLO proposals (bbox, conf, class_id, class_name)
+# - global_embedding: CLIP embedding of whole image
+# - scene_labels: CLIP zero-shot labels for whole image
+# - spatial: left_of/right_of/above/below/overlaps among boxes
+# - product_category: robust category via FAISS or zero-shot label bank
+# - ocr: full ad text + spans (bbox, text, conf) using PaddleOCR or pytesseract
+#
+# All deps are lazy/optional; function degrades gracefully.
+# -----------------------------------------------------------------------------
 
 from __future__ import annotations
 
@@ -31,12 +31,19 @@ logger = logging.getLogger(__name__)
 _YOLO_AVAILABLE = False
 _CLIP_AVAILABLE = False
 _FAISS_AVAILABLE = False
+_OCR_AVAILABLE = False  # new
 
 _yolo_model = None
 _clip_model = None
 _clip_preprocess = None
 _clip_tokenizer = None
 _torch = None
+
+# OCR state
+_OCR_ENGINE = None       # "paddle" | "tesseract" | None
+_paddle_OCR = None       # PaddleOCR instance
+_pytesseract = None      # module
+_cv2 = None              # for some OCR conversions
 
 # FAISS index cache
 _faiss_index = None
@@ -68,7 +75,7 @@ _FOOD_LABELS = [
 _ELECTRONICS_LABELS = ["phone", "laptop", "watch", "headphones", "game controller"]
 _META_LABELS = ["brand logo", "price tag", "discount badge", "coupon", "app icon", "QR code"]
 
-# FAISS config (set USE_FAISS=True to try index if present)
+# FAISS config
 _USE_FAISS = True
 _FAISS_INDEX_PATH = "text_labels.index"
 _FAISS_LABELS_PATH = "text_labels.json"
@@ -97,6 +104,29 @@ try:
 except Exception as e:
     logger.debug("faiss not available: %s", e)
 
+# OCR deps (lazy choice)
+try:
+    # Prefer PaddleOCR (no native binary needed, good accuracy)
+    from paddleocr import PaddleOCR  # type: ignore
+    import cv2  # Paddle returns boxes; we sometimes convert types
+    _paddle_OCR = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+    _cv2 = cv2
+    _OCR_ENGINE = "paddle"
+    _OCR_AVAILABLE = True
+    logger.debug("PaddleOCR available")
+except Exception as e:
+    logger.debug("PaddleOCR not available: %s", e)
+    try:
+        import pytesseract  # type: ignore
+        from PIL import Image  # needed by pytesseract
+        _pytesseract = pytesseract
+        _OCR_ENGINE = "tesseract"
+        _OCR_AVAILABLE = True
+        logger.debug("pytesseract available")
+    except Exception as e2:
+        logger.debug("pytesseract not available: %s", e2)
+        _OCR_ENGINE = None
+        _OCR_AVAILABLE = False
 
 def _device():
     if _torch is None:
@@ -161,6 +191,7 @@ def _load_faiss_index():
         return None, None
     if _faiss_index is None or _faiss_labels is None:
         try:
+            import faiss  # local import to avoid NameError if not available earlier
             _faiss_index = faiss.read_index(_FAISS_INDEX_PATH)
             with open(_FAISS_LABELS_PATH, "r") as f:
                 _faiss_labels = json.load(f)
@@ -246,7 +277,7 @@ def _clip_image_feature(clip_model, preprocess, device, torch_mod, pil_img):
     return f  # torch tensor [1, D], normalized
 
 def _faiss_candidates_from_imgfeat(img_feat, topk: int) -> List[Dict[str, Any]]:
-    """Query FAISS with a normalized image feature (torch or np); returns [{label, score}] with softmax over sims/T."""
+    """Query FAISS with a normalized image feature; returns [{label, score}] with softmax over sims/T."""
     index, labels = _load_faiss_index()
     if index is None or labels is None:
         return []
@@ -290,6 +321,71 @@ def _basic_spatial_relations(dets: List[Dict[str, Any]]) -> Dict[str, Any]:
             rels.append({"subject_index": i, "object_index": j, "relations": relation})
     return {"pairs": rels}
 
+# ---------------- OCR helpers ----------------
+def _init_ocr():
+    """Return (engine_name) or None; OCR instances are already cached at import."""
+    if not _OCR_AVAILABLE:
+        return None
+    return _OCR_ENGINE
+
+def _paddle_ocr_run(pil_img) -> Dict[str, Any]:
+    try:
+        # PaddleOCR expects RGB numpy
+        img_np = np.array(pil_img)  # RGB uint8
+        # result: list with one item per image; each item is a list of [box, (text, score)]
+        result = _paddle_OCR.ocr(img_np, cls=True)
+        spans = []
+        for line in result or []:
+            for det in line:
+                box, (text, conf) = det
+                # box is 4 points [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
+                xs = [p[0] for p in box]
+                ys = [p[1] for p in box]
+                x1, y1, x2, y2 = float(min(xs)), float(min(ys)), float(max(xs)), float(max(ys))
+                spans.append({
+                    "bbox": [x1, y1, x2, y2],
+                    "text": text,
+                    "conf": float(conf),
+                    "source": "full_image"
+                })
+        full_text = " ".join(s["text"] for s in spans if s.get("text"))
+        return {"status": "ok", "engine": "paddle", "full_text": full_text, "spans": spans}
+    except Exception as e:
+        return {"status": "error", "engine": "paddle", "error": str(e), "full_text": "", "spans": []}
+
+def _tesseract_ocr_run(pil_img) -> Dict[str, Any]:
+    try:
+        data = _pytesseract.image_to_data(pil_img, output_type=_pytesseract.Output.DICT)
+        spans = []
+        n = len(data.get("text", []))
+        for i in range(n):
+            text = (data["text"][i] or "").strip()
+            if not text:
+                continue
+            conf = float(data.get("conf", [0]*n)[i] or 0.0)
+            x = int(data.get("left", [0]*n)[i] or 0)
+            y = int(data.get("top", [0]*n)[i] or 0)
+            w = int(data.get("width", [0]*n)[i] or 0)
+            h = int(data.get("height", [0]*n)[i] or 0)
+            spans.append({
+                "bbox": [float(x), float(y), float(x + w), float(y + h)],
+                "text": text,
+                "conf": conf if conf >= 0 else 0.0,  # tesseract sometimes returns -1
+                "source": "full_image"
+            })
+        full_text = " ".join(s["text"] for s in spans if s.get("text"))
+        return {"status": "ok", "engine": "tesseract", "full_text": full_text, "spans": spans}
+    except Exception as e:
+        return {"status": "error", "engine": "tesseract", "error": str(e), "full_text": "", "spans": []}
+
+def _run_ocr(pil_img) -> Dict[str, Any]:
+    eng = _init_ocr()
+    if eng == "paddle":
+        return _paddle_ocr_run(pil_img)
+    if eng == "tesseract":
+        return _tesseract_ocr_run(pil_img)
+    return {"status": "unavailable", "engine": None, "full_text": "", "spans": [], "error": "No OCR engine installed"}
+
 # -----------------------------------------------------------------------------
 # Main extraction
 # -----------------------------------------------------------------------------
@@ -303,6 +399,7 @@ def extract(image: np.ndarray, image_id: str) -> Dict[str, Any]:
         "scene_labels": [],
         "spatial": {"pairs": []},
         "product_category": {"from": None, "labels": []},
+        "ocr": {"status": "unavailable", "engine": None, "full_text": "", "spans": []},  # NEW
     }
 
     if not isinstance(image, np.ndarray) or image.ndim != 3 or image.shape[2] != 3:
@@ -341,6 +438,38 @@ def extract(image: np.ndarray, image_id: str) -> Dict[str, Any]:
     except Exception as e:
         logger.debug("YOLO detection failed: %s", e)
         results["errors"].append({"yolo_error": str(e)})
+
+    # ------------------ OCR: full image (+ optional per box) ------------------
+    try:
+        ocr_out = _run_ocr(pil_img)
+        results["ocr"] = ocr_out
+        # Optional: OCR inside each YOLO crop to catch small/high-contrast UI text
+        if ocr_out.get("status") == "ok" and results["detections"]:
+            spans = ocr_out.get("spans", [])
+            for det in results["detections"]:
+                x1, y1, x2, y2 = [int(round(v)) for v in det["bbox"]]
+                x1, y1 = max(0, x1), max(0, y1)
+                x2 = min(image.shape[1] - 1, x2)
+                y2 = min(image.shape[0] - 1, y2)
+                if x2 <= x1 or y2 <= y1:
+                    continue
+                crop = pil_img.crop((x1, y1, x2, y2))
+                sub = _run_ocr(crop)
+                if sub.get("status") == "ok":
+                    for s in sub.get("spans", []):
+                        # translate crop-local bbox to image coords
+                        bx1, by1, bx2, by2 = s["bbox"]
+                        spans.append({
+                            "bbox": [float(x1) + bx1, float(y1) + by1, float(x1) + bx2, float(y1) + by2],
+                            "text": s.get("text", ""),
+                            "conf": float(s.get("conf", 0.0)),
+                            "source": "yolo_crop"
+                        })
+            # refresh concatenated text after adding crop spans
+            results["ocr"]["spans"] = spans
+            results["ocr"]["full_text"] = " ".join(s["text"] for s in spans if s.get("text"))
+    except Exception as e:
+        results["errors"].append({"ocr_error": str(e)})
 
     # ------------------ CLIP: embeddings, scene, product ------------------
     try:
@@ -418,10 +547,8 @@ def extract(image: np.ndarray, image_id: str) -> Dict[str, Any]:
                     # per-crop classification (FAISS first; fallback to mini-bank)
                     try:
                         if index_ok and c_feat is not None:
-                            # Query FAISS with crop feature
                             cands = _faiss_candidates_from_imgfeat(c_feat, _FAISS_TOPK)
                             det["top_labels"] = cands[:3]
-                            # decide by p1/margin
                             if cands:
                                 p1 = cands[0]["score"]
                                 p2 = cands[1]["score"] if len(cands) > 1 else 0.0
@@ -474,7 +601,7 @@ def extract(image: np.ndarray, image_id: str) -> Dict[str, Any]:
         results["errors"].append({"spatial_error": str(e)})
 
     # ------------------ Final status ------------------
-    produced_any = bool(results["detections"]) or (results.get("global_embedding") is not None)
+    produced_any = bool(results["detections"]) or (results.get("global_embedding") is not None) or (results.get("ocr", {}).get("full_text"))
     if produced_any:
         results["status"] = "ok"
     else:

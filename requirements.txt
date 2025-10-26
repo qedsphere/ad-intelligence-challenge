@@ -34,3 +34,5 @@ faiss-cpu>=1.7.4
 
 # Optional (handy for building a large text index offline)
 tqdm>=4.66.0
+easyocr>=1.7.1
+pytesseract>=0.3.10   # optional fallback if you install tesseract
