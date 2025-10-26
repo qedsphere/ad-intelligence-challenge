@@ -14,6 +14,11 @@ source .venv/bin/activate
 
 The setup script will automatically download the ad assets and install all required dependencies.
 
+3. Finally, install Tesseract:
+```
+brew install tesseract
+```
+
 ## TPP-Gaze Submodule Setup
 
 Required for the attention map features.
