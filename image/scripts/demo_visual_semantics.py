@@ -1,4 +1,3 @@
-# run with python -m image.scripts.demo_visual_semantics \--image ads/images/i0006.png \ --size 1024 1024 \ --out viz_out
 """
 Demo runner for image.visual_semantics.extract()
 
@@ -9,9 +8,13 @@ Demo runner for image.visual_semantics.extract()
     2) simple saliency heatmap overlay (gradient magnitude)
     3) dominant color palette strip
     4) raw JSON output
+    5) OCR overlay image + plaintext dump (if OCR available)
 
 Run:
-    python scripts/demo_visual_semantics.py --image ads/images/i0006.png --size 1024 1024 --out viz_out
+  python -m image.scripts.demo_visual_semantics \
+    --image ads/images/i0006.png \
+    --size 1024 1024 \
+    --out viz_out
 """
 
 from __future__ import annotations
@@ -19,7 +22,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from dataclasses import asdict
+from typing import List, Dict
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
@@ -56,6 +59,7 @@ def kmeans_palette(arr: np.ndarray, k=5, seed=42):
     X = arr.reshape(-1, 3)
     rng = np.random.default_rng(seed)
     centers = X[rng.choice(X.shape[0], k, replace=False)].copy()
+    labels = np.zeros((X.shape[0],), dtype=np.int32)
     for _ in range(10):
         d = np.linalg.norm(X[:, None, :] - centers[None, :, :], axis=2)
         labels = d.argmin(axis=1)
@@ -100,10 +104,9 @@ def simple_saliency(arr: np.ndarray) -> np.ndarray:
     return mag
 
 
-def draw_detections(pil_img: Image.Image, dets: list[dict]) -> Image.Image:
+def draw_detections(pil_img: Image.Image, dets: List[Dict]) -> Image.Image:
     out = pil_img.copy()
     draw = ImageDraw.Draw(out)
-    # Try to load a default font; fallback to none
     try:
         font = ImageFont.load_default()
     except Exception:
@@ -115,6 +118,24 @@ def draw_detections(pil_img: Image.Image, dets: list[dict]) -> Image.Image:
         draw.rectangle((x1, y1, x2, y2), outline=(0, 255, 0), width=3)
         if font:
             draw.text((x1 + 4, y1 + 4), label, fill=(0, 255, 0), font=font)
+    return out
+
+
+def draw_ocr_spans(pil_img: Image.Image, spans: List[Dict]) -> Image.Image:
+    """Draw OCR bboxes in magenta with text."""
+    out = pil_img.copy()
+    draw = ImageDraw.Draw(out)
+    try:
+        font = ImageFont.load_default()
+    except Exception:
+        font = None
+    for s in spans:
+        bx1, by1, bx2, by2 = s.get("bbox", [0,0,0,0])
+        bx1, by1, bx2, by2 = map(int, [bx1, by1, bx2, by2])
+        txt = s.get("text", "")
+        draw.rectangle((bx1, by1, bx2, by2), outline=(255, 0, 255), width=2)
+        if txt and font:
+            draw.text((bx1 + 2, by1 + 2), txt[:32], fill=(255, 0, 255), font=font)
     return out
 
 
@@ -156,7 +177,7 @@ def main():
     det_img.save(det_img_path)
     print(f"[OK] Saved detections overlay to {det_img_path}")
 
-    # 5) Simple saliency overlay (independent of YOLO/CLIP—nice for sanity check)
+    # 5) Simple saliency overlay
     sal = simple_saliency(std_arr)
     plt.figure(figsize=(6, 6))
     plt.imshow(std_pil)
@@ -166,19 +187,43 @@ def main():
     plt.tight_layout(); plt.savefig(sal_path, dpi=150); plt.close()
     print(f"[OK] Saved saliency overlay to {sal_path}")
 
-    # 6) Dominant color palette (independent of YOLO/CLIP)
+    # 6) Dominant color palette
     colors, weights = kmeans_palette(std_arr, k=5, seed=42)
     pal_img = palette_strip(colors, weights)
     pal_path = out_dir / f"{image_id}_palette.png"
     pal_img.save(pal_path)
-    # Pretty-print palette to console
     hexes = [to_hex(c) for c in colors]
     print("[Palette hex -> weight]:")
     for h, w in zip(hexes, weights):
         print(f"  {h}  {float(w):.3f}")
     print(f"[OK] Saved palette strip to {pal_path}")
 
-    # 7) Console summary for quick verification
+    # 7) OCR overlay + text dump (if available)
+    ocr = result.get("ocr", {}) or {}
+    ocr_status = ocr.get("status")
+    ocr_engine = ocr.get("engine")
+    spans = ocr.get("spans", []) or []
+    full_text = (ocr.get("full_text") or "").strip()
+
+    print("\n=== OCR ===")
+    print(f"Status: {ocr_status} | Engine: {ocr_engine}")
+    if full_text:
+        snippet = (full_text[:160] + "...") if len(full_text) > 160 else full_text
+        print(f"Text snippet: {snippet}")
+
+        # save full text
+        txt_path = out_dir / f"{image_id}_ocr.txt"
+        with open(txt_path, "w") as f:
+            f.write(full_text)
+        print(f"[OK] Saved OCR text to {txt_path}")
+
+    if spans:
+        ocr_img = draw_ocr_spans(std_pil, spans)
+        ocr_img_path = out_dir / f"{image_id}_ocr.png"
+        ocr_img.save(ocr_img_path)
+        print(f"[OK] Saved OCR overlay to {ocr_img_path}")
+
+    # 8) Console summary for quick verification
     print("\n=== Summary ===")
     print(f"Status: {result.get('status')}")
     print(f"Detections: {len(result.get('detections', []))}")
@@ -191,7 +236,7 @@ def main():
         lbl0 = pc.get("labels", [])[:1]
         print(f"Product category source: {src}, top: {lbl0}")
 
-    # Optional: print device info if torch present
+    # Optional: device info if torch present
     tm = getattr(vs, "_torch", None)
     if tm is not None:
         mps = getattr(getattr(tm.backends, "mps", None), "is_available", lambda: False)()

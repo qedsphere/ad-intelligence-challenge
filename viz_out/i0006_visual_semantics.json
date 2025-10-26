@@ -1102,5 +1102,353 @@
         "score": 0.05438581481575966
       }
     ]
+  },
+  "ocr": {
+    "status": "ok",
+    "engine": "tesseract",
+    "full_text": "Einstein Bros. Bagels Here for a fun time not a long time! Try the NEW Pretzel Bagel Double Dipper with Beer Cheese Shmear & mustard ROA Pretzel Bagel Double Dipper Orderinow",
+    "spans": [
+      {
+        "bbox": [
+          263.0,
+          36.0,
+          361.0,
+          56.0
+        ],
+        "text": "Einstein",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          372.0,
+          36.0,
+          435.0,
+          56.0
+        ],
+        "text": "Bros.",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          446.0,
+          36.0,
+          529.0,
+          61.0
+        ],
+        "text": "Bagels",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          175.0,
+          124.0,
+          228.0,
+          144.0
+        ],
+        "text": "Here",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          238.0,
+          124.0,
+          267.0,
+          144.0
+        ],
+        "text": "for",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          276.0,
+          129.0,
+          288.0,
+          144.0
+        ],
+        "text": "a",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          297.0,
+          124.0,
+          331.0,
+          144.0
+        ],
+        "text": "fun",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          340.0,
+          124.0,
+          388.0,
+          144.0
+        ],
+        "text": "time",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          399.0,
+          126.0,
+          433.0,
+          144.0
+        ],
+        "text": "not",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          442.0,
+          129.0,
+          454.0,
+          144.0
+        ],
+        "text": "a",
+        "conf": 95.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          464.0,
+          124.0,
+          510.0,
+          149.0
+        ],
+        "text": "long",
+        "conf": 95.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          520.0,
+          124.0,
+          574.0,
+          144.0
+        ],
+        "text": "time!",
+        "conf": 89.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          584.0,
+          124.0,
+          619.0,
+          149.0
+        ],
+        "text": "Try",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          627.0,
+          125.0,
+          662.0,
+          144.0
+        ],
+        "text": "the",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          673.0,
+          124.0,
+          732.0,
+          144.0
+        ],
+        "text": "NEW",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          741.0,
+          124.0,
+          819.0,
+          144.0
+        ],
+        "text": "Pretzel",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          175.0,
+          159.0,
+          238.0,
+          184.0
+        ],
+        "text": "Bagel",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          249.0,
+          159.0,
+          329.0,
+          179.0
+        ],
+        "text": "Double",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          339.0,
+          159.0,
+          414.0,
+          184.0
+        ],
+        "text": "Dipper",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          422.0,
+          159.0,
+          467.0,
+          179.0
+        ],
+        "text": "with",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          477.0,
+          159.0,
+          530.0,
+          179.0
+        ],
+        "text": "Beer",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          540.0,
+          159.0,
+          627.0,
+          179.0
+        ],
+        "text": "Cheese",
+        "conf": 93.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          637.0,
+          159.0,
+          727.0,
+          179.0
+        ],
+        "text": "Shmear",
+        "conf": 92.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          736.0,
+          159.0,
+          751.0,
+          179.0
+        ],
+        "text": "&",
+        "conf": 91.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          174.0,
+          193.0,
+          265.0,
+          213.0
+        ],
+        "text": "mustard",
+        "conf": 95.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          314.0,
+          189.0,
+          376.0,
+          218.0
+        ],
+        "text": "ROA",
+        "conf": 0.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          187.0,
+          981.0,
+          259.0,
+          998.0
+        ],
+        "text": "Pretzel",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          269.0,
+          981.0,
+          328.0,
+          1003.0
+        ],
+        "text": "Bagel",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          338.0,
+          981.0,
+          413.0,
+          998.0
+        ],
+        "text": "Double",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          422.0,
+          981.0,
+          493.0,
+          1003.0
+        ],
+        "text": "Dipper",
+        "conf": 96.0,
+        "source": "full_image"
+      },
+      {
+        "bbox": [
+          704.0,
+          970.0,
+          817.0,
+          986.0
+        ],
+        "text": "Orderinow",
+        "conf": 47.0,
+        "source": "full_image"
+      }
+    ]
   }
 }
