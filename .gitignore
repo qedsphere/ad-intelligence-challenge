@@ -3,3 +3,9 @@ ads.zip
 .DS_Store
 .venv
 __MACOSX
+# ignore feature extraction outputs
+extracted_features/
+ads/images/
+__pycache__/
+*.pyc
+*.zip
