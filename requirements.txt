@@ -1,0 +1,28 @@
+# Audio Processing
+librosa==0.10.1
+soundfile==0.12.1
+pydub==0.25.1
+ffmpeg-python==0.2.0
+
+# Source Separation
+demucs==4.0.1
+
+# Speech-to-Text
+faster-whisper>=1.2.0
+
+# Keyword Extraction (local)
+keybert==0.7.0
+sentence-transformers==2.7.0
+# Optional fallback (no transformers)
+yake==0.4.8
+
+ 
+
+# Core ML/AI
+torch==2.1.2
+numpy==1.26.3
+scipy==1.11.4
+
+# Utilities
+tqdm==4.66.1
+

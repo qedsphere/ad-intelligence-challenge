@@ -1,3 +1,23 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Outputs
+output/**
+*.wav
+*.mp3
+*.m4a
+*.ogg
+*.flac
+
+# Model caches
+.cache/
+~/.cache/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
 ads/
 ads.zip
 .DS_Store
