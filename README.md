@@ -40,6 +40,23 @@ pip install -r requirements.txt
 bash download_models.sh
 ```
 
+## To run Audio/Video/Image Metrics
+
+1. Checkout the relevant branch. Images are on the main branch.
+```bash
+git checkout [audio/videos/main]
+```
+
+2. Activate the virtual environment and run the setup:
+```bash
+source .venv/bin/activate
+[repeat steps above]
+```
+
+The setup script will automatically download the ad assets and install all required dependencies.
+
+3. Read each branch's README to see how to run the scripts. Details on what is run will be described in the provided markdown files.
+
 ## Citation
 
 This project uses the **TPP-Gaze** model for gaze dynamics and scanpath prediction.  
