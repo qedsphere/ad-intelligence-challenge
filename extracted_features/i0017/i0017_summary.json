@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 108604,
     "format": "PNG",
-    "processing_time_ms": 4462.43691444397
+    "processing_time_ms": 40246.634006500244
   },
   "files": {
     "standardized_png": "i0017_standardized.png",
     "detections_png": "i0017_detections.png",
-    "attention_overlay_png": "i0017_attention_overlay.png",
-    "attention_heatmap_npz": "i0017_attention_heatmap.npz",
+    "attention_scanpath_png": "i0017_attention_scanpath.png",
     "ocr_txt": "i0017_ocr.txt",
     "visual_semantics_json": "i0017_visual_semantics.json",
     "attention_map_json": "i0017_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.21807384490966797
+        "score": 0.2180738002061844
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "watch",
-          "score": 0.11335378140211105
+          "score": 0.1133536845445633
         },
         {
           "label": "app icon",
-          "score": 0.04828565567731857
+          "score": 0.048285648226737976
         },
         {
           "label": "price tag",
-          "score": 0.0442325584590435
+          "score": 0.0442325659096241
         }
       ]
     },
-    "ocr_snippet": "{S) Movado x \\ } \u00a2 Beautiful design meets expert craftsmanship to match your style. Discover Movado Watches. Movado | Museum Classic Shop Now Men's Two-Toned Br",
-    "attention_entropy": 9.03537672681142
+    "ocr_snippet": "ee Movado x \\ } s Beautiful design meets expert craftsmanship to match your style. Discover Movado Watches. Movado | Museum Classic Shop Now Men's Two-Toned Bra",
+    "attention_entropy": 9.256365408483058
   }
 }

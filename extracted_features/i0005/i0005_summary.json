@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 403281,
     "format": "PNG",
-    "processing_time_ms": 4316.766023635864
+    "processing_time_ms": 9182.090997695923
   },
   "files": {
     "standardized_png": "i0005_standardized.png",
     "detections_png": "i0005_detections.png",
-    "attention_overlay_png": "i0005_attention_overlay.png",
-    "attention_heatmap_npz": "i0005_attention_heatmap.npz",
+    "attention_scanpath_png": "i0005_attention_scanpath.png",
     "ocr_txt": "i0005_ocr.txt",
     "visual_semantics_json": "i0005_visual_semantics.json",
     "attention_map_json": "i0005_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.17412135004997253
+        "score": 0.17412123084068298
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "bagel",
-          "score": 0.07751569151878357
+          "score": 0.07751557976007462
         },
         {
           "label": "burger",
-          "score": 0.07496187835931778
+          "score": 0.07496190816164017
         },
         {
           "label": "fries",
-          "score": 0.049491751939058304
+          "score": 0.04949174076318741
         }
       ]
     },
-    "ocr_snippet": ". : e Einstein Bros. Bagels x : Try the NEW Oktoberfest Egg Sandwich \u2014 Pretzel Bagel \u00a7Q with Bacon, Ham, Swiss & Beer Cheese Shmear @ It won't last long! Order ",
-    "attention_entropy": 8.586159382109884
+    "ocr_snippet": "Einstein Bros. Bagels x : Try the NEW Oktoberfest Egg Sandwich \u2014 Pretzel Bagel \u00a7Q with Bacon, Ham, Swiss & Beer Cheese Shmear @ It won't last long! Order now Ok",
+    "attention_entropy": 8.517962122548111
   }
 }

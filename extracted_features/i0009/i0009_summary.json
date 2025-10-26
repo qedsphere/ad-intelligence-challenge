@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 541126,
     "format": "PNG",
-    "processing_time_ms": 3863.0731105804443
+    "processing_time_ms": 19261.93881034851
   },
   "files": {
     "standardized_png": "i0009_standardized.png",
     "detections_png": "i0009_detections.png",
-    "attention_overlay_png": "i0009_attention_overlay.png",
-    "attention_heatmap_npz": "i0009_attention_heatmap.npz",
+    "attention_scanpath_png": "i0009_attention_scanpath.png",
     "ocr_txt": "i0009_ocr.txt",
     "visual_semantics_json": "i0009_visual_semantics.json",
     "attention_map_json": "i0009_attention_map.json",
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "coupon",
-          "score": 0.06088096648454666
+          "score": 0.060880888253450394
         },
         {
           "label": "pretzel",
-          "score": 0.057154178619384766
+          "score": 0.057154279202222824
         },
         {
           "label": "price tag",
-          "score": 0.04553115367889404
+          "score": 0.04553113505244255
         }
       ]
     },
     "ocr_snippet": "BACK PAIN relief ee Prices higher in AK and HI. Relieves pressure Promoted by Sleep Number",
-    "attention_entropy": 8.565220163397141
+    "attention_entropy": 8.990877724184916
   }
 }

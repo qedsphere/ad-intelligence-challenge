@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 117394,
     "format": "PNG",
-    "processing_time_ms": 4268.921852111816
+    "processing_time_ms": 12474.834203720093
   },
   "files": {
     "standardized_png": "i0013_standardized.png",
     "detections_png": "i0013_detections.png",
-    "attention_overlay_png": "i0013_attention_overlay.png",
-    "attention_heatmap_npz": "i0013_attention_heatmap.npz",
+    "attention_scanpath_png": "i0013_attention_scanpath.png",
     "ocr_txt": "i0013_ocr.txt",
     "visual_semantics_json": "i0013_visual_semantics.json",
     "attention_map_json": "i0013_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.23859994113445282
+        "score": 0.23859988152980804
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "discount badge",
-          "score": 0.06899288296699524
+          "score": 0.06899291276931763
         },
         {
           "label": "coupon",
-          "score": 0.06385082006454468
+          "score": 0.06385079026222229
         },
         {
           "label": "price tag",
-          "score": 0.05729625001549721
+          "score": 0.05729619041085243
         }
       ]
     },
-    "ocr_snippet": "@ Freeway Insurance xX b4 Stop overpaying by hundreds of dollars for your auto insurance. batons Compare and Save up to Auto Insurance Check Rates Get Auto Insu",
-    "attention_entropy": 8.944247114203138
+    "ocr_snippet": "@ Freeway Insurance xX 3 Stop overpaying by hundreds of dollars for your auto insurance. Bast Ones Compare and Save up to Auto Insurance Check Rates Get Auto In",
+    "attention_entropy": 8.412973861235873
   }
 }

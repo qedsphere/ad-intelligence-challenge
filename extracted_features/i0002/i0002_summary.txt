@@ -2,6 +2,6 @@
 Detections: 0
 Scene: text-heavy ad (0.17)
 Product category: coupon [from clip_image]
-OCR snippet: crunchgainesville Spenaored Month's Ou Total $143, $1 544x, 54422 crunchgainesville SQUATober starts now! @& $1 to join ...
-Attention entropy: 9.62
-Processing time: 8.91s
+OCR snippet: crunchgainesville Speneored Month's Ou Total $148, $1 544z, 34422 crunchgainesville SQUATober starts now! @& $1 to join ...
+Attention entropy: 8.43
+Processing time: 5.34s

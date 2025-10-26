@@ -2,6 +2,6 @@
 Detections: 0
 Scene: text-heavy ad (0.20)
 Product category: coupon [from clip_image]
-OCR snippet: , Paleovalley —-) paleovalley WE MESSED UP...© We spent years obsessing over: - 100% grass fed AND finished cows - Clean...
-Attention entropy: 8.97
-Processing time: 4.24s
+OCR snippet: , Paleovalley —-) paleovalley WE MESSED UP... We spent years obsessing over: - 100% grass fed AND finished cows - Clean,...
+Attention entropy: 9.71
+Processing time: 48.17s

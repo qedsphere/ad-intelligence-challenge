@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 399687,
     "format": "PNG",
-    "processing_time_ms": 3676.1627197265625
+    "processing_time_ms": 10685.603141784668
   },
   "files": {
     "standardized_png": "i0010_standardized.png",
     "detections_png": "i0010_detections.png",
-    "attention_overlay_png": "i0010_attention_overlay.png",
-    "attention_heatmap_npz": "i0010_attention_heatmap.npz",
+    "attention_scanpath_png": "i0010_attention_scanpath.png",
     "ocr_txt": "i0010_ocr.txt",
     "visual_semantics_json": "i0010_visual_semantics.json",
     "attention_map_json": "i0010_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.1814579963684082
+        "score": 0.181457981467247
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "coupon",
-          "score": 0.05933082476258278
+          "score": 0.05933079868555069
         },
         {
           "label": "tray",
-          "score": 0.047431159764528275
+          "score": 0.047431208193302155
         },
         {
           "label": "app icon",
-          "score": 0.046359606087207794
+          "score": 0.0463595911860466
         }
       ]
     },
     "ocr_snippet": "sleep \u00a9 number SLEEP UP TO 15 cooler ClimateCool\u201d smart bed \u2018on the range of maximum active cooling in independent microclimates on the ClimateCool\u2019. Cooling",
-    "attention_entropy": 8.873182912565085
+    "attention_entropy": 8.945394992342122
   }
 }

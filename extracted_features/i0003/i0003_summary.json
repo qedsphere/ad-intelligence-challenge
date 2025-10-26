@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 321891,
     "format": "PNG",
-    "processing_time_ms": 4128.464937210083
+    "processing_time_ms": 5261.308193206787
   },
   "files": {
     "standardized_png": "i0003_standardized.png",
     "detections_png": "i0003_detections.png",
-    "attention_overlay_png": "i0003_attention_overlay.png",
-    "attention_heatmap_npz": "i0003_attention_heatmap.npz",
+    "attention_scanpath_png": "i0003_attention_scanpath.png",
     "ocr_txt": "i0003_ocr.txt",
     "visual_semantics_json": "i0003_visual_semantics.json",
     "attention_map_json": "i0003_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.2211364358663559
+        "score": 0.22113631665706635
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "coupon",
-          "score": 0.059773094952106476
+          "score": 0.05977305397391319
         },
         {
           "label": "price tag",
-          "score": 0.05581541731953621
+          "score": 0.055815454572439194
         },
         {
           "label": "QR code",
-          "score": 0.05401361361145973
+          "score": 0.05401359498500824
         }
       ]
     },
-    "ocr_snippet": "Mercedes-Benz Vans USA 3 Years or Sprinter ~Summer Sales Event - For 2025 Cargo and Crew Sprinters, get 52,000\" | Customer Cash Customer Cash for Medium Fleet T",
-    "attention_entropy": 8.580968409349813
+    "ocr_snippet": "Mercedes-Benz Vans USA 3 Years or Sprinter ~Summer Sales Event - For 2025 Cargo and Crew Sprinters, get $2,000\" | Customer Cash Customer Cash for Medium Fleet T",
+    "attention_entropy": 8.991504817813295
   }
 }

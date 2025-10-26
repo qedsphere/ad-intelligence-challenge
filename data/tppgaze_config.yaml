@@ -1,3 +1,0 @@
-model_type: transformer
-input_size: [1024, 1024]
-seed: 123

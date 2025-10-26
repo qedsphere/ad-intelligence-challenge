@@ -3,5 +3,5 @@ Detections: 0
 Scene: text-heavy ad (0.18)
 Product category: coupon [from clip_image]
 OCR snippet: sleep © number SLEEP UP TO 15 cooler ClimateCool” smart bed ‘on the range of maximum active cooling in independent micro...
-Attention entropy: 8.87
-Processing time: 3.68s
+Attention entropy: 8.95
+Processing time: 10.69s

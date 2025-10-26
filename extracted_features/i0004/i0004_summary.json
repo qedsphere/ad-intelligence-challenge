@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 241063,
     "format": "PNG",
-    "processing_time_ms": 5071.345806121826
+    "processing_time_ms": 6361.438035964966
   },
   "files": {
     "standardized_png": "i0004_standardized.png",
     "detections_png": "i0004_detections.png",
-    "attention_overlay_png": "i0004_attention_overlay.png",
-    "attention_heatmap_npz": "i0004_attention_heatmap.npz",
+    "attention_scanpath_png": "i0004_attention_scanpath.png",
     "ocr_txt": "i0004_ocr.txt",
     "visual_semantics_json": "i0004_visual_semantics.json",
     "attention_map_json": "i0004_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.290542870759964
+        "score": 0.2905426621437073
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "coupon",
-          "score": 0.06070118024945259
+          "score": 0.06070113927125931
         },
         {
           "label": "QR code",
-          "score": 0.05435224622488022
+          "score": 0.054352208971977234
         },
         {
           "label": "price tag",
-          "score": 0.045387499034404755
+          "score": 0.045387476682662964
         }
       ]
     },
     "ocr_snippet": "GLE 45 3 due at signing\u201d the 2026 GLE 450 AMATIC Coupe Optional equipment shown. The 2026 GLE 450 4MATIC Learn more Coupe",
-    "attention_entropy": 9.42660208855336
+    "attention_entropy": 9.225434745244577
   }
 }

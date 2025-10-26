@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 432090,
     "format": "PNG",
-    "processing_time_ms": 6063.608169555664
+    "processing_time_ms": 19219.114065170288
   },
   "files": {
     "standardized_png": "i0015_standardized.png",
     "detections_png": "i0015_detections.png",
-    "attention_overlay_png": "i0015_attention_overlay.png",
-    "attention_heatmap_npz": "i0015_attention_heatmap.npz",
+    "attention_scanpath_png": "i0015_attention_scanpath.png",
     "ocr_txt": "i0015_ocr.txt",
     "visual_semantics_json": "i0015_visual_semantics.json",
     "attention_map_json": "i0015_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.20104195177555084
+        "score": 0.20104214549064636
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "coupon",
-          "score": 0.05070948600769043
+          "score": 0.050709471106529236
         },
         {
           "label": "pretzel",
-          "score": 0.05006029084324837
+          "score": 0.050060272216796875
         },
         {
           "label": "juice",
-          "score": 0.047963064163923264
+          "score": 0.04796302318572998
         }
       ]
     },
     "ocr_snippet": "Paleovalley x Huge Sale Alert! This is your chance to stock up and save big on the cleanest bone broth protein out there Paleovalley\u2019s Grass Fed Bone Broth Prot",
-    "attention_entropy": 9.375348115492587
+    "attention_entropy": 8.840388949080536
   }
 }

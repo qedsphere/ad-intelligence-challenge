@@ -1,4 +1,7 @@
 {
-  "status": "not_implemented",
-  "image_id": "i0018"
+  "status": "error",
+  "image_id": "i0018",
+  "provider": "gemini",
+  "model": "gemini-1.5-flash-latest",
+  "error": "401 Client Error: Unauthorized for url: https://api.lavapayments.com/v1/forward?u=https%3A%2F%2Fgenerativelanguage.googleapis.com%2Fv1beta%2Fmodels%2Fgemini-1.5-flash-latest%3AgenerateContent"
 }

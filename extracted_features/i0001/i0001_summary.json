@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 414762,
     "format": "PNG",
-    "processing_time_ms": 4236.371994018555
+    "processing_time_ms": 7181.267261505127
   },
   "files": {
     "standardized_png": "i0001_standardized.png",
     "detections_png": "i0001_detections.png",
-    "attention_overlay_png": "i0001_attention_overlay.png",
-    "attention_heatmap_npz": "i0001_attention_heatmap.npz",
+    "attention_scanpath_png": "i0001_attention_scanpath.png",
     "ocr_txt": "i0001_ocr.txt",
     "visual_semantics_json": "i0001_visual_semantics.json",
     "attention_map_json": "i0001_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.2689470052719116
+        "score": 0.26894673705101013
       }
     ],
     "product_category": {
@@ -38,11 +37,11 @@
       "labels": [
         {
           "label": "coupon",
-          "score": 0.06858137249946594
+          "score": 0.06858140975236893
         },
         {
           "label": "pretzel",
-          "score": 0.04652221500873566
+          "score": 0.046522244811058044
         },
         {
           "label": "tray",
@@ -50,7 +49,7 @@
         }
       ]
     },
-    "ocr_snippet": "th FREE t @Crunch : EXP TOMORROW! \u00a7 GET 1 MONTH FREE! MEMBERSHIPS STARTING AT \u00a79.99/M0 * JOIN AT CRUNCH.COM 1\u00a2 Down + 1 Month FREE Sign up",
-    "attention_entropy": 8.783320317807158
+    "ocr_snippet": "th FREE t gp Crunch : EXP TOMORROW! \u00a7 GET 1 MONTH FREE! MEMBERSHIPS STARTING AT \u00a79.99/M0 * JOIN AT CRUNCH.COM 1\u00a2 Down + 1 Month FREE Sign up",
+    "attention_entropy": 9.322195177059605
   }
 }

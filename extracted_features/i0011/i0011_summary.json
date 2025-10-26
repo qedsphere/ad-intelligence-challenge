@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 306593,
     "format": "PNG",
-    "processing_time_ms": 5010.263204574585
+    "processing_time_ms": 18637.49599456787
   },
   "files": {
     "standardized_png": "i0011_standardized.png",
     "detections_png": "i0011_detections.png",
-    "attention_overlay_png": "i0011_attention_overlay.png",
-    "attention_heatmap_npz": "i0011_attention_heatmap.npz",
+    "attention_scanpath_png": "i0011_attention_scanpath.png",
     "ocr_txt": "i0011_ocr.txt",
     "visual_semantics_json": "i0011_visual_semantics.json",
     "attention_map_json": "i0011_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.23953093588352203
+        "score": 0.2395312637090683
       }
     ],
     "product_category": {
@@ -42,15 +41,15 @@
         },
         {
           "label": "coupon",
-          "score": 0.0549030639231205
+          "score": 0.054903075098991394
         },
         {
           "label": "cake",
-          "score": 0.05214069038629532
+          "score": 0.052140653133392334
         }
       ]
     },
-    "ocr_snippet": "NICHE @S Turn interest into applications, With the ultimate personalized communications platform. Hi Emily! It\u2019s Central Academy. We have a special message abou",
-    "attention_entropy": 9.270964134751107
+    "ocr_snippet": "ultiple sch jon. Niche NICHE @S Turn interest into applications, With the ultimate personalized communications platform. Hi Emily! It\u2019s Central Academy. We have",
+    "attention_entropy": 8.715703993586724
   }
 }

@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 102286,
     "format": "PNG",
-    "processing_time_ms": 4242.892026901245
+    "processing_time_ms": 48170.469999313354
   },
   "files": {
     "standardized_png": "i0016_standardized.png",
     "detections_png": "i0016_detections.png",
-    "attention_overlay_png": "i0016_attention_overlay.png",
-    "attention_heatmap_npz": "i0016_attention_heatmap.npz",
+    "attention_scanpath_png": "i0016_attention_scanpath.png",
     "ocr_txt": "i0016_ocr.txt",
     "visual_semantics_json": "i0016_visual_semantics.json",
     "attention_map_json": "i0016_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.19679874181747437
+        "score": 0.19679869711399078
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "coupon",
-          "score": 0.04951314255595207
+          "score": 0.04951312392950058
         },
         {
           "label": "discount badge",
-          "score": 0.04391780123114586
+          "score": 0.043917857110500336
         },
         {
           "label": "juice",
-          "score": 0.04359640181064606
+          "score": 0.043596360832452774
         }
       ]
     },
-    "ocr_snippet": ", Paleovalley \u2014-) paleovalley WE MESSED UP...\u00a9 We spent years obsessing over: - 100% grass fed AND finished cows - Clean, high quality, collagen-rich protein - ",
-    "attention_entropy": 8.97128431940725
+    "ocr_snippet": ", Paleovalley \u2014-) paleovalley WE MESSED UP... We spent years obsessing over: - 100% grass fed AND finished cows - Clean, high quality, collagen-rich protein - T",
+    "attention_entropy": 9.706332685632836
   }
 }

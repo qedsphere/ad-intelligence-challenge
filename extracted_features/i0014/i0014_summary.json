@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 267637,
     "format": "PNG",
-    "processing_time_ms": 6135.567188262939
+    "processing_time_ms": 23530.80129623413
   },
   "files": {
     "standardized_png": "i0014_standardized.png",
     "detections_png": "i0014_detections.png",
-    "attention_overlay_png": "i0014_attention_overlay.png",
-    "attention_heatmap_npz": "i0014_attention_heatmap.npz",
+    "attention_scanpath_png": "i0014_attention_scanpath.png",
     "ocr_txt": "i0014_ocr.txt",
     "visual_semantics_json": "i0014_visual_semantics.json",
     "attention_map_json": "i0014_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.30070245265960693
+        "score": 0.3007025122642517
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "coupon",
-          "score": 0.07891057431697845
+          "score": 0.07891058176755905
         },
         {
           "label": "discount badge",
-          "score": 0.07088819146156311
+          "score": 0.07088817656040192
         },
         {
           "label": "QR code",
-          "score": 0.060561712831258774
+          "score": 0.06056167185306549
         }
       ]
     },
     "ocr_snippet": "#DrivingSavings Get Car Insurance ASLOWASA $4.50 ADAY*",
-    "attention_entropy": 9.349964654766628
+    "attention_entropy": 8.846923534736915
   }
 }

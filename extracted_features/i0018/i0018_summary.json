@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 715310,
     "format": "PNG",
-    "processing_time_ms": 5022.470951080322
+    "processing_time_ms": 13534.493207931519
   },
   "files": {
     "standardized_png": "i0018_standardized.png",
     "detections_png": "i0018_detections.png",
-    "attention_overlay_png": "i0018_attention_overlay.png",
-    "attention_heatmap_npz": "i0018_attention_heatmap.npz",
+    "attention_scanpath_png": "i0018_attention_scanpath.png",
     "ocr_txt": "i0018_ocr.txt",
     "visual_semantics_json": "i0018_visual_semantics.json",
     "attention_map_json": "i0018_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.24079178273677826
+        "score": 0.24079173803329468
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "watch",
-          "score": 0.09573209285736084
+          "score": 0.09573198854923248
         },
         {
           "label": "price tag",
-          "score": 0.04637864604592323
+          "score": 0.046378619968891144
         },
         {
           "label": "QR code",
-          "score": 0.0448194295167923
+          "score": 0.04481939598917961
         }
       ]
     },
     "ocr_snippet": "movado Christian McCaffrey wears Museum Imperiale",
-    "attention_entropy": 8.652771915834867
+    "attention_entropy": 8.949416281970588
   }
 }

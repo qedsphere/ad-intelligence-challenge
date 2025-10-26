@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 245637,
     "format": "PNG",
-    "processing_time_ms": 4489.999055862427
+    "processing_time_ms": 12501.05905532837
   },
   "files": {
     "standardized_png": "i0008_standardized.png",
     "detections_png": "i0008_detections.png",
-    "attention_overlay_png": "i0008_attention_overlay.png",
-    "attention_heatmap_npz": "i0008_attention_heatmap.npz",
+    "attention_scanpath_png": "i0008_attention_scanpath.png",
     "ocr_txt": "i0008_ocr.txt",
     "visual_semantics_json": "i0008_visual_semantics.json",
     "attention_map_json": "i0008_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "text-heavy ad",
-        "score": 0.21432501077651978
+        "score": 0.2143249809741974
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "price tag",
-          "score": 0.054931461811065674
+          "score": 0.054931432008743286
         },
         {
           "label": "discount badge",
-          "score": 0.054639436304569244
+          "score": 0.05463940650224686
         },
         {
           "label": "brand logo",
-          "score": 0.05085734650492668
+          "score": 0.050857339054346085
         }
       ]
     },
-    "ocr_snippet": "Xero Shoes x $ e Save 10% sitewide on foot-shaped comfort\u2014zero-drop, flexible footwear for natural movement. XERGSHOES 10% Off Sitewide Learn more",
-    "attention_entropy": 9.211716862759198
+    "ocr_snippet": "Xero Shoes x $ e Save 10% sitewide on foot-shaped comfort\u2014zero-drop, flexible footwear for natural movement. XEROSHOES 10% Off Sitewide Learn more",
+    "attention_entropy": 8.67979681405864
   }
 }

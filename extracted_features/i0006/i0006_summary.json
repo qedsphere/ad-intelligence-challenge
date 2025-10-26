@@ -13,13 +13,12 @@
     ],
     "file_size_bytes": 286821,
     "format": "PNG",
-    "processing_time_ms": 5547.287225723267
+    "processing_time_ms": 17495.591163635254
   },
   "files": {
     "standardized_png": "i0006_standardized.png",
     "detections_png": "i0006_detections.png",
-    "attention_overlay_png": "i0006_attention_overlay.png",
-    "attention_heatmap_npz": "i0006_attention_heatmap.npz",
+    "attention_scanpath_png": "i0006_attention_scanpath.png",
     "ocr_txt": "i0006_ocr.txt",
     "visual_semantics_json": "i0006_visual_semantics.json",
     "attention_map_json": "i0006_attention_map.json",
@@ -30,7 +29,7 @@
     "scene_top": [
       {
         "label": "breakfast scene",
-        "score": 0.15815868973731995
+        "score": 0.15815860033035278
       }
     ],
     "product_category": {
@@ -38,19 +37,19 @@
       "labels": [
         {
           "label": "bagel",
-          "score": 0.11591293662786484
+          "score": 0.11591275781393051
         },
         {
           "label": "pretzel",
-          "score": 0.05984406918287277
+          "score": 0.05984412878751755
         },
         {
           "label": "burger",
-          "score": 0.05438581481575966
+          "score": 0.05438588932156563
         }
       ]
     },
-    "ocr_snippet": "Einstein Bros. Bagels Here for a fun time not a long time! Try the NEW Pretzel Bagel Double Dipper with Beer Cheese Shmear & mustard ROA Pretzel Bagel Double Di",
-    "attention_entropy": 9.669623844353815
+    "ocr_snippet": "Einstein Bros. Bagels Here for a fun time not a long time! Try the NEW Pretzel Bagel Double Dipper with Beer Cheese Shmear & mustard QOQ Pretzel Bagel Double Di",
+    "attention_entropy": 9.13682873335178
   }
 }

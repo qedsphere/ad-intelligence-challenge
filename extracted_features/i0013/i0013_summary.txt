@@ -2,6 +2,6 @@
 Detections: 2
 Scene: text-heavy ad (0.24)
 Product category: discount badge [from clip_image]
-OCR snippet: @ Freeway Insurance xX b4 Stop overpaying by hundreds of dollars for your auto insurance. batons Compare and Save up to ...
-Attention entropy: 8.94
-Processing time: 4.27s
+OCR snippet: @ Freeway Insurance xX 3 Stop overpaying by hundreds of dollars for your auto insurance. Bast Ones Compare and Save up t...
+Attention entropy: 8.41
+Processing time: 12.47s

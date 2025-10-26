@@ -2,6 +2,6 @@
 Detections: 1
 Scene: text-heavy ad (0.24)
 Product category: app icon [from clip_image]
-OCR snippet: NICHE @S Turn interest into applications, With the ultimate personalized communications platform. Hi Emily! It’s Central...
-Attention entropy: 9.27
-Processing time: 5.01s
+OCR snippet: ultiple sch jon. Niche NICHE @S Turn interest into applications, With the ultimate personalized communications platform....
+Attention entropy: 8.72
+Processing time: 18.64s
