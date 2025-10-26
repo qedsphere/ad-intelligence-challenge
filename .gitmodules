@@ -1,0 +1,4 @@
+[submodule "tppgaze"]
+	path = tppgaze
+	url = https://github.com/phuselab/tppgaze.git
+	branch = main
