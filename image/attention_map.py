@@ -6,6 +6,34 @@ import json
 import torch
 import tempfile
 import numpy as np
+import random
+
+def _maybe_seed_everything():
+    """Seed Python, NumPy, and PyTorch if TPPGAZE_SEED is set (>=0)."""
+    seed_env = os.getenv("TPPGAZE_SEED")
+    if seed_env is None:
+        return  # no seeding requested
+    seed = int(seed_env)
+    if seed < 0:
+        return
+
+    random.seed(seed)
+    np.random.seed(seed)
+    try:
+        import torch
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+        # make cuDNN deterministic (at some perf cost)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        # stricter determinism (PyTorch 1.12+). If an op is nondeterministic, it warns.
+        torch.use_deterministic_algorithms(True, warn_only=True)
+        # helps some BLAS kernels be deterministic
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+    except Exception:
+        pass
+
 from typing import Dict, Any, List, Tuple, Optional
 from pathlib import Path
 
@@ -18,29 +46,22 @@ from tppgaze.tppgaze import TPPGaze
 _TPP_MODEL: Optional[TPPGaze] = None
 
 def _resolve_paths() -> Tuple[str, str]:
-    """
-    Resolve config and checkpoint locations. You can override with env vars:
-      TPPGAZE_CFG, TPPGAZE_CKPT
-    Fallbacks try typical repo layouts.
-    """
-    cfg_env  = os.getenv("TPPGAZE_CFG")
+    cfg_env = os.getenv("TPPGAZE_CFG")
     ckpt_env = os.getenv("TPPGAZE_CKPT")
     if cfg_env and ckpt_env and Path(cfg_env).is_file() and Path(ckpt_env).is_file():
         return cfg_env, ckpt_env
 
-    # Common defaults if running inside the repo
+    base = Path(__file__).resolve().parents[1]  # repo root
     candidates = [
-        ("data/config.yaml", "data/model_transformer.pth"),
-        ("tppgaze/data/config.yaml", "tppgaze/data/model_transformer.pth"),
-        ("./tppgaze/data/config.yaml", "./tppgaze/data/model_transformer.pth"),
+        (base / "tppgaze/data/config.yaml", base / "tppgaze/data/model_transformer.pth"),
+        (Path("tppgaze/data/config.yaml"), Path("tppgaze/data/model_transformer.pth")),
     ]
-    for cfg_rel, ckpt_rel in candidates:
-        if Path(cfg_rel).is_file() and Path(ckpt_rel).is_file():
-            return cfg_rel, ckpt_rel
+    for cfg, ckpt in candidates:
+        if cfg.is_file() and ckpt.is_file():
+            return str(cfg), str(ckpt)
 
     raise FileNotFoundError(
-        "Could not locate TPPGaze config/weights. "
-        "Set env vars TPPGAZE_CFG and TPPGAZE_CKPT or place files under tppgaze/data/."
+        "Could not locate TPPGaze config/weights. Set TPPGAZE_CFG/TPPGAZE_CKPT or place files under tppgaze/data/."
     )
 
 
@@ -235,10 +256,12 @@ def extract(image: np.ndarray, image_id: str) -> Dict[str, Any]:
     try:
         model = _get_model()
 
-        # Inference parameters (tune if desired)
-        n_simulations = int(os.getenv("TPPGAZE_N_SIM", "8"))
-        sample_duration = float(os.getenv("TPPGAZE_DURATION_SEC", "2.0"))
+        _maybe_seed_everything()
 
+        # Inference parameters (tune if desired)
+        n_simulations = int(os.getenv("TPPGAZE_N_SIM", "1")) #multiple will give you a heat map!
+        sample_duration = float(os.getenv("TPPGAZE_DURATION_SEC", "2.0"))
+        
         # Generate scanpaths (list of arrays [x, y, fix_duration])
         scanpaths: List[np.ndarray] = model.generate_predictions(
             tmp_path, sample_duration, n_simulations

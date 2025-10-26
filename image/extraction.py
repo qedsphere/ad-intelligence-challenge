@@ -400,6 +400,17 @@ class ExtractionPipeline:
         """Save extracted features to JSON file"""
         output_file = self.output_dir / "extracted_features.json"
         
+        # add near the top of the file (once)
+        def _json_default(obj):
+            import numpy as np
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            if isinstance(obj, (np.floating,)):
+                return float(obj)
+            if isinstance(obj, (np.integer,)):
+                return int(obj)
+            return str(obj)
+        
         # Convert to serializable format
         features_data = []
         for features in features_list:
@@ -420,7 +431,7 @@ class ExtractionPipeline:
         
         # Save to file
         with open(output_file, 'w') as f:
-            json.dump(features_data, f, indent=2)
+            json.dump(features_data, f, indent=2, default=_json_default)
         
         logger.info(f"Saved features to {output_file}")
     
